@@ -76,4 +76,35 @@ public static class CustomMapper
             Role = model.Role
         };
     }
+
+    /// <summary>
+    /// Maps <see cref="CategoryRequest"/> to <see cref="CategoryModel"/>.
+    /// </summary>
+    /// <param name="dto">The provided object to map from.</param>
+    /// <param name="id">The category id; use 0 for create, existing id for update.</param>
+    /// <returns>The category model.</returns>
+    public static CategoryModel ToModel(this CategoryRequest dto, int id = 0)
+    {
+        return new CategoryModel
+        {
+            Id = id,
+            Name = dto.Name,
+            Description = dto.Description
+        };
+    }
+
+    /// <summary>
+    /// Maps <see cref="CategoryModel"/> to <see cref="CategoryDto"/>.
+    /// </summary>
+    /// <param name="model">The model to map from.</param>
+    /// <returns>The category dto.</returns>
+    public static CategoryDto ToDto(this CategoryModel model)
+    {
+        return new CategoryDto
+        {
+            Id = model.Id,
+            Name = model.Name,
+            Description = model.Description
+        };
+    }
 }

@@ -60,4 +60,24 @@ public static class CustomMapper
             UpdatedBy = entity.UpdatedBy
         };
     }
+
+    public static Category ToEntity(this CategoryModel model)
+    {
+        return new Category
+        {
+            Id = model.Id,
+            Name = model.Name,
+            Description = model.Description
+        };
+    }
+
+    public static CategoryModel ToModel(this Category entity)
+    {
+        return new CategoryModel
+        {
+            Id = entity.Id,
+            Name = entity.Name,
+            Description = entity.Description
+        };
+    }
 }

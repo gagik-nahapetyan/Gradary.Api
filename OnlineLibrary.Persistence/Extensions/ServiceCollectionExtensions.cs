@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using OnlineLibrary.Application.Abstractions.Repositories;
 using OnlineLibrary.Persistence.Repositories;
 
@@ -9,6 +9,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
         services.AddScoped<IBookRepository, BookRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
 
         return services;
     }

@@ -29,6 +29,26 @@ public static class CustomMapper
         };
     }
 
+    public static Author ToEntity(this AuthorModel model)
+    {
+        return new Author
+        {
+            Id = model.Id,
+            FullName = model.FullName,
+            Biography = model.Biography
+        };
+    }
+
+    public static AuthorModel ToModel(this Author entity)
+    {
+        return new AuthorModel
+        {
+            Id = entity.Id,
+            FullName = entity.FullName,
+            Biography = entity.Biography
+        };
+    }
+
     public static User ToEntity(this UserModel model)
     {
         return new User

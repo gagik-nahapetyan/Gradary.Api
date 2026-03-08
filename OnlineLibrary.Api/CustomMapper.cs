@@ -28,7 +28,7 @@ public static class CustomMapper
     /// <summary>
     /// Maps <see cref="BookModel"/> to <see cref="BookDto"/>.
     /// </summary>
-    /// <param name="dto">The provided object to map from.</param>
+    /// <param name="model">The provided object to map from.</param>
     /// <returns>The book dto.</returns>
     public static BookDto ToDto(this BookModel model)
     {
@@ -39,6 +39,37 @@ public static class CustomMapper
             AuthorId = model.AuthorId,
             CategoryId = model.CategoryId,
             Description = model.Description
+        };
+    }
+
+    /// <summary>
+    /// Maps <see cref="AuthorRequest"/> to <see cref="AuthorModel"/>.
+    /// </summary>
+    /// <param name="dto">The request to map from.</param>
+    /// <param name="id">The author id; use 0 for create, existing id for update.</param>
+    /// <returns>The author model.</returns>
+    public static AuthorModel ToModel(this AuthorRequest dto, int id = 0)
+    {
+        return new AuthorModel
+        {
+            Id = id,
+            FullName = dto.FullName,
+            Biography = dto.Biography
+        };
+    }
+
+    /// <summary>
+    /// Maps <see cref="AuthorModel"/> to <see cref="AuthorDto"/>.
+    /// </summary>
+    /// <param name="model">The model to map from.</param>
+    /// <returns>The author dto.</returns>
+    public static AuthorDto ToDto(this AuthorModel model)
+    {
+        return new AuthorDto
+        {
+            Id = model.Id,
+            FullName = model.FullName,
+            Biography = model.Biography
         };
     }
 

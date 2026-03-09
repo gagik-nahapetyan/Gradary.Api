@@ -100,4 +100,28 @@ public static class CustomMapper
             Description = entity.Description
         };
     }
+
+    public static Review ToEntity(this ReviewModel model)
+    {
+        return new Review
+        {
+            Id = model.Id,
+            UserId = model.UserId,
+            BookId = model.BookId,
+            Rating = model.Rating,
+            Comment = model.Comment
+        };
+    }
+
+    public static ReviewModel ToModel(this Review entity)
+    {
+        return new ReviewModel
+        {
+            Id = entity.Id,
+            UserId = entity.UserId,
+            BookId = entity.BookId,
+            Rating = entity.Rating,
+            Comment = entity.Comment
+        };
+    }
 }

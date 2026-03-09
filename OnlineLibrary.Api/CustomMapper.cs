@@ -138,4 +138,39 @@ public static class CustomMapper
             Description = model.Description
         };
     }
+
+    /// <summary>
+    /// Maps <see cref="ReviewRequest"/> to <see cref="ReviewModel"/>.
+    /// </summary>
+    /// <param name="dto">The provided object to map from.</param>
+    /// <param name="id">The review id; use 0 for create, existing id for update.</param>
+    /// <returns>The review model.</returns>
+    public static ReviewModel ToModel(this ReviewRequest dto, int id = 0)
+    {
+        return new ReviewModel
+        {
+            Id = id,
+            UserId = dto.UserId,
+            BookId = dto.BookId,
+            Rating = dto.Rating,
+            Comment = dto.Comment
+        };
+    }
+
+    /// <summary>
+    /// Maps <see cref="ReviewModel"/> to <see cref="ReviewDto"/>.
+    /// </summary>
+    /// <param name="model">The model to map from.</param>
+    /// <returns>The review dto.</returns>
+    public static ReviewDto ToDto(this ReviewModel model)
+    {
+        return new ReviewDto
+        {
+            Id = model.Id,
+            UserId = model.UserId,
+            BookId = model.BookId,
+            Rating = model.Rating,
+            Comment = model.Comment
+        };
+    }
 }

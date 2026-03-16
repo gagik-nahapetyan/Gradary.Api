@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using OnlineLibrary;
-using OnlineLibrary.Api.Dtos;
+using OnlineLibrary.Api.Dtos.User;
 using OnlineLibrary.Application.Abstractions.Services;
 
 namespace OnlineLibrary.Api.Controllers;

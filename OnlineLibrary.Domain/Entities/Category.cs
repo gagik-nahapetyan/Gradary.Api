@@ -20,16 +20,17 @@ public class Category : EntityBase
     /// </summary>
     public int? ParentId { get; set; }
 
+
     /// <summary>
     /// The parent category in the hierarchy.
     /// </summary>
     public virtual Category? Parent { get; set; }
 
+
     /// <summary>
     /// The child categories in the hierarchy.
     /// </summary>
     public virtual ICollection<Category> Children { get; set; } = [];
-
 
     /// <summary>
     /// The list of the related books.

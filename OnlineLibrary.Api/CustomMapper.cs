@@ -1,5 +1,8 @@
-using OnlineLibrary.Api.Dtos;
 using OnlineLibrary.Api.Dtos.Author;
+using OnlineLibrary.Api.Dtos.Book;
+using OnlineLibrary.Api.Dtos.Category;
+using OnlineLibrary.Api.Dtos.Review;
+using OnlineLibrary.Api.Dtos.User;
 using OnlineLibrary.Domain.Models;
 
 namespace OnlineLibrary.Api;

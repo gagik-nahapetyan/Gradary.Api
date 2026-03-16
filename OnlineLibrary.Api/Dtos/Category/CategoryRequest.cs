@@ -1,4 +1,4 @@
-namespace OnlineLibrary.Api.Dtos;
+namespace OnlineLibrary.Api.Dtos.Category;
 
 /// <summary>
 /// Represents the request body for creating or updating a category.

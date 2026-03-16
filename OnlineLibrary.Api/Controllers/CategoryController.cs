@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using OnlineLibrary.Api.Dtos;
+using OnlineLibrary.Api.Dtos.Category;
 using OnlineLibrary.Application.Abstractions.Services;
 
 namespace OnlineLibrary.Api.Controllers;

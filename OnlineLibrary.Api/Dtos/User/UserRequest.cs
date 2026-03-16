@@ -1,6 +1,6 @@
 using OnlineLibrary.Domain.Enums;
 
-namespace OnlineLibrary.Api.Dtos;
+namespace OnlineLibrary.Api.Dtos.User;
 
 /// <summary>
 /// Represents the request body for creating or updating a user.
@@ -27,3 +27,4 @@ public class UserRequest
     /// </summary>
     public UserRole Role { get; set; }
 }
+

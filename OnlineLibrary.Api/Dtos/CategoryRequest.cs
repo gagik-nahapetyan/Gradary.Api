@@ -14,5 +14,10 @@ public class CategoryRequest
     /// The description of the category.
     /// </summary>
     public string? Description { get; set; }
+
+    /// <summary>
+    /// The parent id of the category.
+    /// </summary>
+    public int? ParentId { get; set; }
 }
 

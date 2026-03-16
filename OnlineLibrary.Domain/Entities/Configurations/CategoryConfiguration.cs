@@ -18,8 +18,22 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
             .Property(c => c.Description)
             .HasColumnType("nvarchar(500)");
 
+        #region Indices
+
         modelBuilder
             .HasIndex(c => c.Name)
             .IsUnique();
+
+        #endregion
+
+        #region Relationships
+
+        modelBuilder
+            .HasOne(c => c.Parent)
+            .WithMany(c => c.Children)
+            .HasForeignKey(c => c.ParentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        #endregion
     }
 }

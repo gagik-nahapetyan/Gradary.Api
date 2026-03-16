@@ -1,4 +1,5 @@
 using OnlineLibrary.Api.Dtos;
+using OnlineLibrary.Api.Dtos.Author;
 using OnlineLibrary.Domain.Models;
 
 namespace OnlineLibrary.Api;
@@ -120,7 +121,8 @@ public static class CustomMapper
         {
             Id = id,
             Name = dto.Name,
-            Description = dto.Description
+            Description = dto.Description,
+            ParentId = dto.ParentId
         };
     }
 
@@ -135,7 +137,8 @@ public static class CustomMapper
         {
             Id = model.Id,
             Name = model.Name,
-            Description = model.Description
+            Description = model.Description,
+            ParentId = model.ParentId
         };
     }
 

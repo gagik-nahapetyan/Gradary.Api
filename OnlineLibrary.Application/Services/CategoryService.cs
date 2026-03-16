@@ -11,6 +11,8 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
 {
     public async Task<CategoryModel> CreateAsync(CategoryModel model)
     {
+        await ValidateParentAsync(model);
+
         var entity = model.ToEntity();
         entity = await categoryRepository.InsertAsync(entity);
 
@@ -21,6 +23,8 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
 
     public async Task UpdateAsync(CategoryModel model)
     {
+        await ValidateParentAsync(model);
+
         var entity = model.ToEntity();
         categoryRepository.Update(entity);
 
@@ -45,5 +49,30 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
 
         return model;
     }
-}
 
+    private async Task ValidateParentAsync(CategoryModel model)
+    {
+        if (!model.ParentId.HasValue)
+            return;
+
+        if (model.ParentId == model.Id)
+            throw new ArgumentException("Category cannot be its own parent.", nameof(model.ParentId));
+
+        var parent = await categoryRepository.GetByIdAsync(model.ParentId.Value);
+        if (parent is null)
+            throw new KeyNotFoundException($"Parent category with id {model.ParentId.Value} not found.");
+
+        var currentParentId = parent.ParentId;
+        while (currentParentId.HasValue)
+        {
+            var currentParent = await categoryRepository.GetByIdAsync(currentParentId.Value);
+            if (currentParent is null)
+                break;
+
+            if (currentParent.Id == model.Id)
+                throw new InvalidOperationException("Category hierarchy cannot contain cycles.");
+
+            currentParentId = currentParent.ParentId;
+        }
+    }
+}

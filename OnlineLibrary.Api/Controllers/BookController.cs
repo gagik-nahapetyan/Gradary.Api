@@ -18,7 +18,7 @@ public class BookController(IBookService bookService) : ControllerBase
         return Ok(model.ToDto());
     }
 
-    [HttpPost("update/{id:int:min(1)}")]
+    [HttpPut("update/{id:int:min(1)}")]
     public async Task<IActionResult> Update(int id, BookRequest input)
     {
         var model = input.ToModel(id);

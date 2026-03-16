@@ -1,7 +1,7 @@
-namespace OnlineLibrary.Api.Dtos;
+namespace OnlineLibrary.Api.Dtos.Author;
 
 /// <summary>
-/// Represents the request body for creating or updating an author.
+/// Represents the request body for creating and updating an author.
 /// </summary>
 public class AuthorRequest
 {
@@ -15,4 +15,3 @@ public class AuthorRequest
     /// </summary>
     public string? Biography { get; set; }
 }
-

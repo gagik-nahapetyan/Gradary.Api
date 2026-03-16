@@ -1,4 +1,6 @@
-﻿namespace OnlineLibrary.Api.Dtos;
+using Microsoft.AspNetCore.Http;
+
+namespace OnlineLibrary.Api.Dtos.Book;
 
 /// <summary>
 /// Represents the <see cref="BookRequest"/> class.
@@ -30,3 +32,4 @@ public class BookRequest
     /// </summary>
     public IFormFile? File { get; set; }
 }
+

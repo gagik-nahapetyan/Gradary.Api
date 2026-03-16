@@ -1,4 +1,4 @@
-namespace OnlineLibrary.Api.Dtos;
+namespace OnlineLibrary.Api.Dtos.Category;
 
 /// <summary>
 /// Represents the <see cref="CategoryDto"/> class.
@@ -19,5 +19,10 @@ public class CategoryDto
     /// The description of the category.
     /// </summary>
     public string? Description { get; set; }
+
+    /// <summary>
+    /// The parent id of the category.
+    /// </summary>
+    public int? ParentId { get; set; }
 }
 

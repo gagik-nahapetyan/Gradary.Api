@@ -1,6 +1,6 @@
 using OnlineLibrary.Domain.Enums;
 
-namespace OnlineLibrary.Api.Dtos;
+namespace OnlineLibrary.Api.Dtos.User;
 
 /// <summary>
 /// Represents the <see cref="UserDto"/> class. Does not include password or password hash.
@@ -27,3 +27,4 @@ public class UserDto
     /// </summary>
     public UserRole Role { get; set; }
 }
+

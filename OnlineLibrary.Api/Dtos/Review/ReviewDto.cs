@@ -1,3 +1,5 @@
+namespace OnlineLibrary.Api.Dtos.Review;
+
 /// <summary>
 /// Represents the <see cref="ReviewDto"/> class.
 /// </summary>
@@ -28,3 +30,4 @@ public class ReviewDto
     /// </summary>
     public required string Comment { get; set; }
 }
+

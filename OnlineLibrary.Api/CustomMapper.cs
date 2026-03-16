@@ -1,4 +1,8 @@
-using OnlineLibrary.Api.Dtos;
+using OnlineLibrary.Api.Dtos.Author;
+using OnlineLibrary.Api.Dtos.Book;
+using OnlineLibrary.Api.Dtos.Category;
+using OnlineLibrary.Api.Dtos.Review;
+using OnlineLibrary.Api.Dtos.User;
 using OnlineLibrary.Domain.Models;
 
 namespace OnlineLibrary.Api;
@@ -120,7 +124,8 @@ public static class CustomMapper
         {
             Id = id,
             Name = dto.Name,
-            Description = dto.Description
+            Description = dto.Description,
+            ParentId = dto.ParentId
         };
     }
 
@@ -135,7 +140,8 @@ public static class CustomMapper
         {
             Id = model.Id,
             Name = model.Name,
-            Description = model.Description
+            Description = model.Description,
+            ParentId = model.ParentId
         };
     }
 

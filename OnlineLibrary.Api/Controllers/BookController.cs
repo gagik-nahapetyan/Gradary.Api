@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using OnlineLibrary.Api.Dtos;
+using OnlineLibrary.Api.Dtos.Book;
 using OnlineLibrary.Application.Abstractions.Services;
 
 namespace OnlineLibrary.Api.Controllers;
@@ -18,7 +18,7 @@ public class BookController(IBookService bookService) : ControllerBase
         return Ok(model.ToDto());
     }
 
-    [HttpPost("update/{id:int:min(1)}")]
+    [HttpPut("update/{id:int:min(1)}")]
     public async Task<IActionResult> Update(int id, BookRequest input)
     {
         var model = input.ToModel(id);

@@ -87,7 +87,8 @@ public static class CustomMapper
         {
             Id = model.Id,
             Name = model.Name,
-            Description = model.Description
+            Description = model.Description,
+            ParentId = model.ParentId
         };
     }
 
@@ -97,7 +98,8 @@ public static class CustomMapper
         {
             Id = entity.Id,
             Name = entity.Name,
-            Description = entity.Description
+            Description = entity.Description,
+            ParentId = entity.ParentId
         };
     }
 

@@ -1,4 +1,4 @@
-﻿namespace OnlineLibrary.Api.Dtos;
+namespace OnlineLibrary.Api.Dtos.Book;
 
 /// <summary>
 /// Represents the <see cref="BookDto"/> class.
@@ -30,3 +30,4 @@ public class BookDto
     /// </summary>
     public string? Description { get; set; }
 }
+

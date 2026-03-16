@@ -1,6 +1,6 @@
 using System;
 
-namespace OnlineLibrary.Api.Dtos;
+namespace OnlineLibrary.Api.Dtos.Author;
 
 /// <summary>
 /// Represents the <see cref="AuthorDto"/> class.
@@ -21,15 +21,5 @@ public class AuthorDto
     /// The biography of the author.
     /// </summary>
     public string? Biography { get; set; }
-
-    /// <summary>
-    /// The created date of the author record.
-    /// </summary>
-    public DateTime CreatedAt { get; set; }
-
-    /// <summary>
-    /// The updated date of the author record.
-    /// </summary>
-    public DateTime UpdatedAt { get; set; }
 }
 

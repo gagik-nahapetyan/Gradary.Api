@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace OnlineLibrary.Api.Dtos.Author;
 
 /// <summary>
@@ -8,6 +10,7 @@ public class AuthorRequest
     /// <summary>
     /// The full name of the author.
     /// </summary>
+    [MinLength(1)]
     public required string FullName { get; set; }
 
     /// <summary>

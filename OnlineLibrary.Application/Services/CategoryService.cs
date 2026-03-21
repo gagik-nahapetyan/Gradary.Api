@@ -9,58 +9,62 @@ namespace OnlineLibrary.Application.Services;
 /// </summary>
 public class CategoryService(ICategoryRepository categoryRepository) : ICategoryService
 {
-    public async Task<CategoryModel> CreateAsync(CategoryModel model)
+    public async Task<CategoryModel> CreateAsync(CategoryModel categoryModel)
     {
-        await ValidateParentAsync(model);
+        await ValidateParentAsync(categoryModel);
 
-        var entity = model.ToEntity();
-        entity = await categoryRepository.InsertAsync(entity);
+        var category = categoryModel.ToEntity();
+        category = await categoryRepository.InsertAsync(category);
 
         await categoryRepository.SaveChangesAsync();
 
-        return entity.ToModel();
+        return category.ToModel();
     }
 
-    public async Task UpdateAsync(CategoryModel model)
+    public async Task UpdateAsync(CategoryModel categoryModel)
     {
-        await ValidateParentAsync(model);
+        var existingCategory = await categoryRepository.GetByIdAsync(categoryModel.Id);
+        if (existingCategory is null)
+            throw new KeyNotFoundException($"Category with id {categoryModel.Id} not found");
 
-        var entity = model.ToEntity();
-        categoryRepository.Update(entity);
+        await ValidateParentAsync(categoryModel);
+
+        var category = categoryModel.ToEntity();
+        categoryRepository.Update(category);
 
         await categoryRepository.SaveChangesAsync();
     }
 
     public async Task<List<CategoryModel>> GetAsync()
     {
-        var entities = await categoryRepository.GetAllAsync();
-        var models = entities.Select(e => e.ToModel()).ToList();
+        var categories = await categoryRepository.GetAllAsync();
+        var categoryModels = categories.Select(c => c.ToModel()).ToList();
 
-        return models;
+        return categoryModels;
     }
 
     public async Task<CategoryModel> GetByIdAsync(int id)
     {
-        var entity = await categoryRepository.GetByIdAsync(id);
-        if (entity is null)
+        var category = await categoryRepository.GetByIdAsync(id);
+        if (category is null)
             throw new KeyNotFoundException($"Category with id {id} not found");
 
-        var model = entity.ToModel();
+        var categoryModel = category.ToModel();
 
-        return model;
+        return categoryModel;
     }
 
-    private async Task ValidateParentAsync(CategoryModel model)
+    private async Task ValidateParentAsync(CategoryModel categoryModel)
     {
-        if (!model.ParentId.HasValue)
+        if (!categoryModel.ParentId.HasValue)
             return;
 
-        if (model.ParentId == model.Id)
-            throw new ArgumentException("Category cannot be its own parent.", nameof(model.ParentId));
+        if (categoryModel.ParentId == categoryModel.Id)
+            throw new ArgumentException("Category cannot be its own parent.", nameof(categoryModel.ParentId));
 
-        var parent = await categoryRepository.GetByIdAsync(model.ParentId.Value);
+        var parent = await categoryRepository.GetByIdAsync(categoryModel.ParentId.Value);
         if (parent is null)
-            throw new KeyNotFoundException($"Parent category with id {model.ParentId.Value} not found.");
+            throw new KeyNotFoundException($"Parent category with id {categoryModel.ParentId.Value} not found.");
 
         var currentParentId = parent.ParentId;
         while (currentParentId.HasValue)
@@ -69,7 +73,7 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
             if (currentParent is null)
                 break;
 
-            if (currentParent.Id == model.Id)
+            if (currentParent.Id == categoryModel.Id)
                 throw new InvalidOperationException("Category hierarchy cannot contain cycles.");
 
             currentParentId = currentParent.ParentId;

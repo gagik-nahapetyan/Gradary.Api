@@ -9,40 +9,44 @@ namespace OnlineLibrary.Application.Services;
 /// </summary>
 public class ReviewService(IReviewRepository reviewRepository) : IReviewService
 {
-    public async Task<ReviewModel> CreateAsync(ReviewModel model)
+    public async Task<ReviewModel> CreateAsync(ReviewModel reviewModel)
     {
-        var entity = model.ToEntity();
-        entity = await reviewRepository.InsertAsync(entity);
+        var review = reviewModel.ToEntity();
+        review = await reviewRepository.InsertAsync(review);
 
         await reviewRepository.SaveChangesAsync();
 
-        return entity.ToModel();
+        return review.ToModel();
     }
 
-    public async Task UpdateAsync(ReviewModel model)
+    public async Task UpdateAsync(ReviewModel reviewModel)
     {
-        var entity = model.ToEntity();
-        reviewRepository.Update(entity);
+        var existingReview = await reviewRepository.GetByIdAsync(reviewModel.Id);
+        if (existingReview is null)
+            throw new KeyNotFoundException($"Review with id {reviewModel.Id} not found");
+
+        var review = reviewModel.ToEntity();
+        reviewRepository.Update(review);
 
         await reviewRepository.SaveChangesAsync();
     }
 
     public async Task<ReviewModel> GetByIdAsync(int id)
     {
-        var entity = await reviewRepository.GetByIdAsync(id);
-        if (entity is null)
+        var review = await reviewRepository.GetByIdAsync(id);
+        if (review is null)
             throw new KeyNotFoundException($"Review with id {id} not found");
 
-        var model = entity.ToModel();
+        var reviewModel = review.ToModel();
 
-        return model;
+        return reviewModel;
     }
 
     public async Task<List<ReviewModel>> GetByBookIdAsync(int bookId)
     {
-        var entities = await reviewRepository.GetByBookIdAsync(bookId);
-        var models = entities.Select(e => e.ToModel()).ToList();
+        var reviews = await reviewRepository.GetByBookIdAsync(bookId);
+        var reviewModels = reviews.Select(r => r.ToModel()).ToList();
 
-        return models;
+        return reviewModels;
     }
 }

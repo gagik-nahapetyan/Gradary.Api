@@ -11,62 +11,62 @@ namespace OnlineLibrary.Application.Services;
 /// </summary>
 public class UserService(IUserRepository userRepository) : IUserService
 {
-    public async Task<UserModel> CreateAsync(UserModel model)
+    public async Task<UserModel> CreateAsync(UserModel userModel)
     {
-        if (string.IsNullOrWhiteSpace(model.Password))
-            throw new ArgumentException("Password is required when creating a user.", nameof(model));
+        if (string.IsNullOrWhiteSpace(userModel.Password))
+            throw new ArgumentException("Password is required when creating a user.", nameof(userModel));
 
-        model.PasswordHash = HashPassword(model.Password);
-        model.Password = null;
+        userModel.PasswordHash = HashPassword(userModel.Password);
+        userModel.Password = null;
 
-        var entity = model.ToEntity();
-        entity = await userRepository.InsertAsync(entity);
+        var user = userModel.ToEntity();
+        user = await userRepository.InsertAsync(user);
 
         await userRepository.SaveChangesAsync();
 
-        return entity.ToModel();
+        return user.ToModel();
     }
 
-    public async Task UpdateAsync(UserModel model)
+    public async Task UpdateAsync(UserModel userModel)
     {
-        var existingEntity = await userRepository.GetByIdAsync(model.Id);
-        if (existingEntity is null)
-            throw new KeyNotFoundException($"User with id {model.Id} not found");
+        var existingUser = await userRepository.GetByIdAsync(userModel.Id);
+        if (existingUser is null)
+            throw new KeyNotFoundException($"User with id {userModel.Id} not found");
 
-        if (!string.IsNullOrWhiteSpace(model.Password))
+        if (!string.IsNullOrWhiteSpace(userModel.Password))
         {
-            model.PasswordHash = HashPassword(model.Password);
+            userModel.PasswordHash = HashPassword(userModel.Password);
         }
         else
         {
-            model.PasswordHash = existingEntity.PasswordHash;
+            userModel.PasswordHash = existingUser.PasswordHash;
         }
 
-        model.Password = null;
+        userModel.Password = null;
 
-        var entity = model.ToEntity();
-        userRepository.Update(entity);
+        var user = userModel.ToEntity();
+        userRepository.Update(user);
 
         await userRepository.SaveChangesAsync();
     }
 
     public async Task<List<UserModel>> GetAsync()
     {
-        var entities = await userRepository.GetAllAsync();
-        var models = entities.Select(e => e.ToModel()).ToList();
+        var users = await userRepository.GetAllAsync();
+        var userModels = users.Select(u => u.ToModel()).ToList();
 
-        return models;
+        return userModels;
     }
 
     public async Task<UserModel> GetByIdAsync(int id)
     {
-        var entity = await userRepository.GetByIdAsync(id);
-        if (entity is null)
+        var user = await userRepository.GetByIdAsync(id);
+        if (user is null)
             throw new KeyNotFoundException($"User with id {id} not found");
 
-        var model = entity.ToModel();
+        var userModel = user.ToModel();
 
-        return model;
+        return userModel;
     }
 
     private static string HashPassword(string password)

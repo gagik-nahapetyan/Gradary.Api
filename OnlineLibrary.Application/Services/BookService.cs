@@ -1,4 +1,4 @@
-﻿using OnlineLibrary.Application.Abstractions.Repositories;
+using OnlineLibrary.Application.Abstractions.Repositories;
 using OnlineLibrary.Application.Abstractions.Services;
 using OnlineLibrary.Domain.Models;
 
@@ -9,40 +9,44 @@ namespace OnlineLibrary.Application.Services;
 /// </summary>
 public class BookService(IBookRepository bookRepository) : IBookService
 {
-    public async Task<BookModel> CreateAsync(BookModel model)
+    public async Task<BookModel> CreateAsync(BookModel bookModel)
     {
-        var entity = model.ToEntity();
-        entity = await bookRepository.InsertAsync(entity);
+        var book = bookModel.ToEntity();
+        book = await bookRepository.InsertAsync(book);
 
         await bookRepository.SaveChangesAsync();
 
-        return entity.ToModel();
+        return book.ToModel();
     }
 
-    public async Task UpdateAsync(BookModel model)
+    public async Task UpdateAsync(BookModel bookModel)
     {
-        var entity = model.ToEntity();
-        bookRepository.Update(entity);
+        var existingBook = await bookRepository.GetByIdAsync(bookModel.Id);
+        if (existingBook is null)
+            throw new KeyNotFoundException($"Book with id {bookModel.Id} not found");
+
+        var book = bookModel.ToEntity();
+        bookRepository.Update(book);
 
         await bookRepository.SaveChangesAsync();
     }
 
     public async Task<List<BookModel>> GetAsync()
     {
-        var entities = await bookRepository.GetAllAsync();
-        var models = entities.Select(e => e.ToModel()).ToList();
-        
-        return models;
+        var books = await bookRepository.GetAllAsync();
+        var bookModels = books.Select(b => b.ToModel()).ToList();
+
+        return bookModels;
     }
 
     public async Task<BookModel> GetByIdAsync(int id)
     {
-        var entity = await bookRepository.GetByIdAsync(id);
-        if (entity is null)
+        var book = await bookRepository.GetByIdAsync(id);
+        if (book is null)
             throw new KeyNotFoundException($"Book with id {id} not found");
 
-        var model = entity.ToModel();
+        var bookModel = book.ToModel();
 
-        return model;
+        return bookModel;
     }
 }

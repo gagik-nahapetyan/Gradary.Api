@@ -9,41 +9,44 @@ namespace OnlineLibrary.Application.Services;
 /// </summary>
 public class AuthorService(IAuthorRepository authorRepository) : IAuthorService
 {
-    public async Task<AuthorModel> CreateAsync(AuthorModel model)
+    public async Task<AuthorModel> CreateAsync(AuthorModel authorModel)
     {
-        var entity = model.ToEntity();
-        entity = await authorRepository.InsertAsync(entity);
+        var author = authorModel.ToEntity();
+        author = await authorRepository.InsertAsync(author);
 
         await authorRepository.SaveChangesAsync();
 
-        return entity.ToModel();
+        return author.ToModel();
     }
 
-    public async Task UpdateAsync(AuthorModel model)
+    public async Task UpdateAsync(AuthorModel authorModel)
     {
-        var entity = model.ToEntity();
-        authorRepository.Update(entity);
+        var existingAuthor = await authorRepository.GetByIdAsync(authorModel.Id);
+        if (existingAuthor is null)
+            throw new KeyNotFoundException($"Author with id {authorModel.Id} not found");
+
+        var author = authorModel.ToEntity();
+        authorRepository.Update(author);
 
         await authorRepository.SaveChangesAsync();
     }
 
     public async Task<List<AuthorModel>> GetAsync()
     {
-        var entities = await authorRepository.GetAllAsync();
-        var models = entities.Select(e => e.ToModel()).ToList();
+        var authors = await authorRepository.GetAllAsync();
+        var authorModels = authors.Select(a => a.ToModel()).ToList();
 
-        return models;
+        return authorModels;
     }
 
     public async Task<AuthorModel> GetByIdAsync(int id)
     {
-        var entity = await authorRepository.GetByIdAsync(id);
-        if (entity is null)
+        var author = await authorRepository.GetByIdAsync(id);
+        if (author is null)
             throw new KeyNotFoundException($"Author with id {id} not found");
 
-        var model = entity.ToModel();
+        var authorModel = author.ToModel();
 
-        return model;
+        return authorModel;
     }
 }
-

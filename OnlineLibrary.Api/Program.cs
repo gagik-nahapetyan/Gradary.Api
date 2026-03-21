@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using OnlineLibrary.Api.ExceptionHandlers;
 using OnlineLibrary.Application.Extensions;
 using OnlineLibrary.Persistence;
 using OnlineLibrary.Persistence.Extensions;
@@ -8,6 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -29,6 +32,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
 

@@ -9,8 +9,8 @@ namespace OnlineLibrary.Test.Controllers;
 
 public class AuthorControllerTests
 {
-    private readonly AuthorController _controller;
     private readonly Mock<IAuthorService> _mockAuthorService;
+    private readonly AuthorController _controller;
 
     public AuthorControllerTests()
     {
@@ -185,6 +185,8 @@ public class AuthorControllerTests
         var dtos = Assert.IsType<List<AuthorDto>>(okResponse.Value);
 
         Assert.Equal(2, dtos.Count);
+        Assert.Equal(authors[0].Id, dtos[0].Id);
+        Assert.Equal(authors[1].Id, dtos[1].Id);
 
         _mockAuthorService.Verify(s => s.GetAsync(), Times.Once);
     }

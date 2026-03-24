@@ -79,10 +79,10 @@ namespace OnlineLibrary.Persistence.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("FullTitle")
+                    b.Property<string>("Subtitle")
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<string>("ShortTitle")
+                    b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(127)");
 
@@ -98,7 +98,7 @@ namespace OnlineLibrary.Persistence.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.HasIndex("ShortTitle");
+                    b.HasIndex("Title");
 
                     b.ToTable("Book");
                 });

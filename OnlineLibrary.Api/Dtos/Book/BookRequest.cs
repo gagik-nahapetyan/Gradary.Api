@@ -10,12 +10,12 @@ public class BookRequest
     /// <summary>
     /// The main title of the book.
     /// </summary>
-    public required string ShortTitle { get; set; }
+    public required string Title { get; set; }
 
     /// <summary>
-    /// The main title with the subtitle of the book.
+    /// The subtitle of the book.
     /// </summary>
-    public string? FullTitle { get; set; }
+    public string? Subtitle { get; set; }
 
     /// <summary>
     /// The author of the book.

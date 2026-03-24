@@ -76,8 +76,8 @@ namespace OnlineLibrary.Persistence.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    ShortTitle = table.Column<string>(type: "nvarchar(127)", nullable: false),
-                    FullTitle = table.Column<string>(type: "nvarchar(255)", nullable: true),
+                    Title = table.Column<string>(type: "nvarchar(127)", nullable: false),
+                    Subtitle = table.Column<string>(type: "nvarchar(255)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     AuthorId = table.Column<int>(type: "int", nullable: false),
                     CategoryId = table.Column<int>(type: "int", nullable: false),
@@ -151,9 +151,9 @@ namespace OnlineLibrary.Persistence.Migrations
                 column: "CategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Book_ShortTitle",
+                name: "IX_Book_Title",
                 table: "Book",
-                column: "ShortTitle");
+                column: "Title");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Category_Name",

@@ -10,8 +10,8 @@ public static class CustomMapper
         return new Book
         {
             Id = model.Id,
-            ShortTitle = model.ShortTitle,
-            FullTitle = model.FullTitle,
+            Title = model.Title,
+            Subtitle = model.Subtitle,
             AuthorId = model.AuthorId,
             CategoryId = model.CategoryId,
             Description = model.Description
@@ -23,8 +23,8 @@ public static class CustomMapper
         return new BookModel 
         { 
             Id = entity.Id,
-            ShortTitle = entity.ShortTitle,
-            FullTitle = entity.FullTitle,
+            Title = entity.Title,
+            Subtitle = entity.Subtitle,
             AuthorId = entity.AuthorId,
             CategoryId = entity.CategoryId,
             Description = entity.Description

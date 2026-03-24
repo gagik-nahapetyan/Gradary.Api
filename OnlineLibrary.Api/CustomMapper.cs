@@ -22,8 +22,8 @@ public static class CustomMapper
         return new BookModel
         {
             Id = id,
-            ShortTitle = dto.ShortTitle,
-            FullTitle = dto.FullTitle,
+            Title = dto.Title,
+            Subtitle = dto.Subtitle,
             AuthorId = dto.AuthorId,
             CategoryId = dto.CategoryId,
             Description = dto.Description
@@ -40,8 +40,8 @@ public static class CustomMapper
         return new BookDto
         {
             Id = model.Id,
-            ShortTitle = model.ShortTitle,
-            FullTitle = model.FullTitle,
+            Title = model.Title,
+            Subtitle = model.Subtitle,
             AuthorId = model.AuthorId,
             CategoryId = model.CategoryId,
             Description = model.Description

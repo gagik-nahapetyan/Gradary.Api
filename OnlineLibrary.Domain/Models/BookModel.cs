@@ -6,9 +6,14 @@
 public class BookModel : AuditModel
 {
     /// <summary>
-    /// The title of the book.
+    /// The main title of the book.
     /// </summary>
-    public required string Title { get; set; }
+    public required string ShortTitle { get; set; }
+    
+    /// <summary>
+    /// The main title with the subtitle of the book.
+    /// </summary>
+    public string? FullTitle { get; set; }
     
     /// <summary>
     /// The author id of the book.

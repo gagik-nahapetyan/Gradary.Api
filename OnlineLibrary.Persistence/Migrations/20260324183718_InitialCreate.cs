@@ -36,11 +36,18 @@ namespace OnlineLibrary.Persistence.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(100)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(500)", nullable: true)
+                    Description = table.Column<string>(type: "nvarchar(500)", nullable: true),
+                    ParentId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Category", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Category_Category_ParentId",
+                        column: x => x.ParentId,
+                        principalTable: "Category",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -69,10 +76,11 @@ namespace OnlineLibrary.Persistence.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Title = table.Column<string>(type: "nvarchar(255)", nullable: false),
+                    ShortTitle = table.Column<string>(type: "nvarchar(127)", nullable: false),
+                    FullTitle = table.Column<string>(type: "nvarchar(255)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     AuthorId = table.Column<int>(type: "int", nullable: false),
                     CategoryId = table.Column<int>(type: "int", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedBy = table.Column<int>(type: "int", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -143,15 +151,20 @@ namespace OnlineLibrary.Persistence.Migrations
                 column: "CategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Book_Title",
+                name: "IX_Book_ShortTitle",
                 table: "Book",
-                column: "Title");
+                column: "ShortTitle");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Category_Name",
                 table: "Category",
                 column: "Name",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Category_ParentId",
+                table: "Category",
+                column: "ParentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Review_BookId_UserId",

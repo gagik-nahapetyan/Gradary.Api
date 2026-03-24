@@ -13,7 +13,11 @@ public class BookConfiguration : AuditEntityConfiguration<Book>
         base.Configure(modelBuilder);
 
         modelBuilder
-            .Property(p => p.Title)
+            .Property(p => p.ShortTitle)
+            .HasColumnType("nvarchar(127)");
+
+        modelBuilder
+            .Property(p => p.FullTitle)
             .HasColumnType("nvarchar(255)");
 
         modelBuilder
@@ -39,7 +43,7 @@ public class BookConfiguration : AuditEntityConfiguration<Book>
         #region Indices
 
         modelBuilder
-            .HasIndex(u => u.Title);
+            .HasIndex(u => u.ShortTitle);
 
         #endregion
 

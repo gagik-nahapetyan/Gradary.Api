@@ -6,9 +6,19 @@ namespace OnlineLibrary.Domain.Entities;
 public class Book : AuditEntity
 {
     /// <summary>
-    /// The title of the book.
+    /// The main title of the book.
     /// </summary>
-    public required string Title { get; set; }
+    public required string ShortTitle { get; set; }
+
+    /// <summary>
+    /// The main title with the subtitle of the book.
+    /// </summary>
+    public string? FullTitle { get; set; }
+
+    /// <summary>
+    /// The description of the book.
+    /// </summary>
+    public string? Description { get; set; }
 
     /// <summary>
     /// The author of the book.
@@ -19,11 +29,6 @@ public class Book : AuditEntity
     /// The category id of the book.
     /// </summary>
     public required int CategoryId { get; set; }
-
-    /// <summary>
-    /// The description of the book.
-    /// </summary>
-    public string? Description { get; set; }
 
 
     /// <summary>

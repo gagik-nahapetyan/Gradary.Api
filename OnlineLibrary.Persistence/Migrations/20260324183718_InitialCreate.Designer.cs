@@ -12,7 +12,7 @@ using OnlineLibrary.Persistence;
 namespace OnlineLibrary.Persistence.Migrations
 {
     [DbContext(typeof(OnlineLibraryDbContext))]
-    [Migration("20260222192108_InitialCreate")]
+    [Migration("20260324183718_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -82,9 +82,12 @@ namespace OnlineLibrary.Persistence.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Title")
-                        .IsRequired()
+                    b.Property<string>("FullTitle")
                         .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("ShortTitle")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(127)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -98,7 +101,7 @@ namespace OnlineLibrary.Persistence.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.HasIndex("Title");
+                    b.HasIndex("ShortTitle");
 
                     b.ToTable("Book");
                 });
@@ -118,10 +121,15 @@ namespace OnlineLibrary.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Name")
                         .IsUnique();
+
+                    b.HasIndex("ParentId");
 
                     b.ToTable("Category");
                 });
@@ -231,6 +239,16 @@ namespace OnlineLibrary.Persistence.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("OnlineLibrary.Domain.Entities.Category", b =>
+                {
+                    b.HasOne("OnlineLibrary.Domain.Entities.Category", "Parent")
+                        .WithMany("Children")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Parent");
+                });
+
             modelBuilder.Entity("OnlineLibrary.Domain.Entities.Review", b =>
                 {
                     b.HasOne("OnlineLibrary.Domain.Entities.Book", "Book")
@@ -263,6 +281,8 @@ namespace OnlineLibrary.Persistence.Migrations
             modelBuilder.Entity("OnlineLibrary.Domain.Entities.Category", b =>
                 {
                     b.Navigation("Books");
+
+                    b.Navigation("Children");
                 });
 
             modelBuilder.Entity("OnlineLibrary.Domain.Entities.User", b =>

@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OnlineLibrary.Api.Dtos.Book;
 using OnlineLibrary.Application.Abstractions.Services;
@@ -10,9 +9,11 @@ namespace OnlineLibrary.Api.Controllers;
 public class BookController(IBookService bookService) : ControllerBase
 {
     [HttpPost("create")]
-    public async Task<IActionResult> Upload(BookRequest input)
+    public async Task<IActionResult> Create(BookRequest input)
     {
-        var model = input.ToModel();
+        using var stream = input.File?.OpenReadStream();
+        var model = input.ToModel(stream: stream);
+
         model = await bookService.CreateAsync(model);
 
         return Ok(model.ToDto());
@@ -21,7 +22,9 @@ public class BookController(IBookService bookService) : ControllerBase
     [HttpPut("update/{id:int:min(1)}")]
     public async Task<IActionResult> Update(int id, BookRequest input)
     {
-        var model = input.ToModel(id);
+        using var stream = input.File?.OpenReadStream();
+        var model = input.ToModel(id, stream);
+
         await bookService.UpdateAsync(model);
 
         return Ok(model.ToDto());
@@ -41,6 +44,6 @@ public class BookController(IBookService bookService) : ControllerBase
     {
         var books = await bookService.GetAsync();
         
-        return Ok(books);
+        return Ok(books.Select(b => b.ToDto()));
     }
 }

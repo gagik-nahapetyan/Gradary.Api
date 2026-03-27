@@ -17,16 +17,17 @@ public static class CustomMapper
     /// </summary>
     /// <param name="dto">The provided object to map from.</param>
     /// <returns>The book model.</returns>
-    public static BookModel ToModel(this BookRequest dto, int id = 0)
+    public static BookModel ToModel(this BookRequest dto, int id = 0, Stream? stream = null)
     {
         return new BookModel
         {
             Id = id,
             Title = dto.Title,
             Subtitle = dto.Subtitle,
+            Description = dto.Description,
             AuthorId = dto.AuthorId,
             CategoryId = dto.CategoryId,
-            Description = dto.Description
+            Stream = stream
         };
     }
 

@@ -1,5 +1,4 @@
-﻿using OnlineLibrary.Domain;
-using OnlineLibrary.Domain.Models;
+﻿using OnlineLibrary.Domain.Models;
 
 namespace OnlineLibrary.Application.Abstractions.Services;
 
@@ -9,10 +8,21 @@ namespace OnlineLibrary.Application.Abstractions.Services;
 public interface IBookService
 {
     /// <summary>
-    /// Retrieves the list of book models.
+    /// Creates a book model.
     /// </summary>
-    /// <returns>Task representing an asynchronous operation, wrapping the list of book models.</returns>
-    Task<List<BookModel>> GetAsync();
+    /// <param name="model">The book model provided.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Task representing an asynchronous operation, wrapping the book model created.</returns>
+    Task<BookModel> CreateAsync(BookModel model, CancellationToken cancellationToken = default);
+
+
+    /// <summary>
+    /// Updates a book model.
+    /// </summary>
+    /// <param name="model">The book model provided.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Task representing an asynchronous operation.</returns>
+    Task UpdateAsync(BookModel model, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves the book model by id.
@@ -22,15 +32,8 @@ public interface IBookService
     Task<BookModel> GetByIdAsync(int id);
 
     /// <summary>
-    /// Creates a book model.
+    /// Retrieves the list of book models.
     /// </summary>
-    /// <param name="model">The book model provided.</param>
-    /// <returns>Task representing an asynchronous operation, wrapping the book model created.</returns>
-    Task<BookModel> CreateAsync(BookModel model);
-
-    /// <summary>
-    /// Updates a book model.
-    /// </summary>
-    /// <param name="model">The book model provided.</param>
-    Task UpdateAsync(BookModel model);
+    /// <returns>Task representing an asynchronous operation, wrapping the list of book models.</returns>
+    Task<List<BookModel>> GetAsync();
 }

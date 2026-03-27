@@ -64,4 +64,9 @@ public class Repository<TEntity> : IRepository<TEntity>
     {
         await _dbContext.SaveChangesAsync();
     }
+
+    public async Task<bool> ExistAsync(Expression<Func<TEntity, bool>> predicate)
+    {
+        return await DbSet.AnyAsync(predicate);
+    }
 }

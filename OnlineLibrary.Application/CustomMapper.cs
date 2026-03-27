@@ -12,9 +12,9 @@ public static class CustomMapper
             Id = model.Id,
             Title = model.Title,
             Subtitle = model.Subtitle,
+            Description = model.Description,
             AuthorId = model.AuthorId,
-            CategoryId = model.CategoryId,
-            Description = model.Description
+            CategoryId = model.CategoryId
         };
     }
 
@@ -25,9 +25,9 @@ public static class CustomMapper
             Id = entity.Id,
             Title = entity.Title,
             Subtitle = entity.Subtitle,
+            Description = entity.Description,
             AuthorId = entity.AuthorId,
-            CategoryId = entity.CategoryId,
-            Description = entity.Description
+            CategoryId = entity.CategoryId
         };
     }
 

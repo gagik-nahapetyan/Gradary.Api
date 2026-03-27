@@ -43,6 +43,13 @@ public interface IRepository<TEntity>
     Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate);
 
     /// <summary>
+    /// Determines if any entity satisfying the provided condition exists.
+    /// </summary>
+    /// <param name="predicate">The predicate supplied.</param>
+    /// <returns>The task representing the asynchronous operation wrapped the boolean flag.</returns>
+    Task<bool> ExistAsync(Expression<Func<TEntity, bool>> predicate);
+
+    /// <summary>
     /// Removes the record from the database.
     /// </summary>
     /// <param name="entity">The entity to remove the record for.</param>

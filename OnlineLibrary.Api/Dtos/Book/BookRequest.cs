@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Http;
-
 namespace OnlineLibrary.Api.Dtos.Book;
 
 /// <summary>

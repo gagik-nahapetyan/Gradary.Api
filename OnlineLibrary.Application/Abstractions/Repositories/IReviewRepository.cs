@@ -12,5 +12,5 @@ public interface IReviewRepository : IRepository<Review>
     /// </summary>
     /// <param name="bookId">The id of the book.</param>
     /// <returns>The reviews by book id.</returns>
-    Task<IEnumerable<Review>> GetByBookIdAsync(int bookId);
+    Task<IEnumerable<Review>> GetByBookIdAsync(int bookId, CancellationToken cancellationToken = default);
 }

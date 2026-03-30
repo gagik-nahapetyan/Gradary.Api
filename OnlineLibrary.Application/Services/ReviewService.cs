@@ -9,31 +9,31 @@ namespace OnlineLibrary.Application.Services;
 /// </summary>
 public class ReviewService(IReviewRepository reviewRepository) : IReviewService
 {
-    public async Task<ReviewModel> CreateAsync(ReviewModel reviewModel)
+    public async Task<ReviewModel> CreateAsync(ReviewModel reviewModel, CancellationToken cancellationToken = default)
     {
         var review = reviewModel.ToEntity();
-        review = await reviewRepository.InsertAsync(review);
+        review = await reviewRepository.InsertAsync(review, cancellationToken);
 
-        await reviewRepository.SaveChangesAsync();
+        await reviewRepository.SaveChangesAsync(cancellationToken);
 
         return review.ToModel();
     }
 
-    public async Task UpdateAsync(ReviewModel reviewModel)
+    public async Task UpdateAsync(ReviewModel reviewModel, CancellationToken cancellationToken = default)
     {
-        var existingReview = await reviewRepository.GetByIdAsync(reviewModel.Id);
+        var existingReview = await reviewRepository.GetByIdAsync(reviewModel.Id, cancellationToken);
         if (existingReview is null)
             throw new KeyNotFoundException($"Review with id {reviewModel.Id} not found");
 
         var review = reviewModel.ToEntity();
         reviewRepository.Update(review);
 
-        await reviewRepository.SaveChangesAsync();
+        await reviewRepository.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<ReviewModel> GetByIdAsync(int id)
+    public async Task<ReviewModel> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        var review = await reviewRepository.GetByIdAsync(id);
+        var review = await reviewRepository.GetByIdAsync(id, cancellationToken);
         if (review is null)
             throw new KeyNotFoundException($"Review with id {id} not found");
 
@@ -42,9 +42,9 @@ public class ReviewService(IReviewRepository reviewRepository) : IReviewService
         return reviewModel;
     }
 
-    public async Task<List<ReviewModel>> GetByBookIdAsync(int bookId)
+    public async Task<List<ReviewModel>> GetByBookIdAsync(int bookId, CancellationToken cancellationToken = default)
     {
-        var reviews = await reviewRepository.GetByBookIdAsync(bookId);
+        var reviews = await reviewRepository.GetByBookIdAsync(bookId, cancellationToken);
         var reviewModels = reviews.Select(r => r.ToModel()).ToList();
 
         return reviewModels;

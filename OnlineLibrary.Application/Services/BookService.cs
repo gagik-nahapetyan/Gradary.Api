@@ -30,26 +30,26 @@ public class BookService(IBookRepository bookRepository) : IBookService
 
     public async Task UpdateAsync(BookModel bookModel, CancellationToken cancellationToken = default)
     {
-        var bookExists = await bookRepository.ExistAsync(b => b.Id == bookModel.Id);
+        var bookExists = await bookRepository.ExistAsync(b => b.Id == bookModel.Id, cancellationToken);
         if (!bookExists)
             throw new KeyNotFoundException($"Book with id {bookModel.Id} not found");
 
-        var bookWithSameTitleExists = await bookRepository.ExistAsync(b => b.Id != bookModel.Id && b.Title.ToLower() == bookModel.Title.ToLower());
+        var bookWithSameTitleExists = await bookRepository.ExistAsync(b => b.Id != bookModel.Id && b.Title.ToLower() == bookModel.Title.ToLower(), cancellationToken);
         if (bookWithSameTitleExists)
             throw new ArgumentException($"Book with title {bookModel.Title} already exists");
 
         var book = bookModel.ToEntity();
         bookRepository.Update(book);
 
-        await bookRepository.SaveChangesAsync();
+        await bookRepository.SaveChangesAsync(cancellationToken);
 
         if (bookModel.Stream is not null)
             await UploadFileAsync(bookModel, bookModel.Stream, cancellationToken);
     }
 
-    public async Task<BookModel> GetByIdAsync(int id)
+    public async Task<BookModel> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        var book = await bookRepository.GetByIdAsync(id);
+        var book = await bookRepository.GetByIdAsync(id, cancellationToken);
         if (book is null)
             throw new KeyNotFoundException($"Book with id {id} not found");
 
@@ -58,9 +58,9 @@ public class BookService(IBookRepository bookRepository) : IBookService
         return bookModel;
     }
 
-    public async Task<List<BookModel>> GetAsync()
+    public async Task<List<BookModel>> GetAsync(CancellationToken cancellationToken = default)
     {
-        var books = await bookRepository.GetAllAsync();
+        var books = await bookRepository.GetAllAsync(cancellationToken);
         var bookModels = books.Select(b => b.ToModel()).ToList();
 
         return bookModels;

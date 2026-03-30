@@ -12,9 +12,9 @@ public class ReviewRepository : Repository<Review>, IReviewRepository
     {
     }
 
-    public async Task<IEnumerable<Review>> GetByBookIdAsync(int bookId)
+    public async Task<IEnumerable<Review>> GetByBookIdAsync(int bookId, CancellationToken cancellationToken = default)
     {
-        var reviews = await FindAsync(r => r.BookId == bookId);
+        var reviews = await FindAsync(r => r.BookId == bookId, cancellationToken);
 
         return reviews;
     }

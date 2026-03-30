@@ -28,12 +28,14 @@ public interface IBookService
     /// Retrieves the book model by id.
     /// </summary>
     /// <param name="id">The id of the book.</param>
+    /// <param name="cancellationToken">The token to cancel the operation.</param>
     /// <returns>Task representing an asynchronous operation, wrapping the book model.</returns>
-    Task<BookModel> GetByIdAsync(int id);
+    Task<BookModel> GetByIdAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves the list of book models.
     /// </summary>
+    /// <param name="cancellationToken">The token to cancel the operation.</param>
     /// <returns>Task representing an asynchronous operation, wrapping the list of book models.</returns>
-    Task<List<BookModel>> GetAsync();
+    Task<List<BookModel>> GetAsync(CancellationToken cancellationToken = default);
 }

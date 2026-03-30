@@ -36,17 +36,17 @@ public class CategoryControllerTest
             Description = input.Description,
             ParentId = input.ParentId,
         };
-        
+
         _categoryServiceMock
-            .Setup(s => s.CreateAsync(It.Is<CategoryModel>(c => 
-                c.Name == input.Name && 
+            .Setup(s => s.CreateAsync(It.Is<CategoryModel>(c =>
+                c.Name == input.Name &&
                 c.Description == input.Description &&
-                c.ParentId == input.ParentId)))
+                c.ParentId == input.ParentId), It.IsAny<CancellationToken>()))
             .ReturnsAsync(createdModel);
 
 
         // act
-        var result = await _controller.Create(input);
+        var result = await _controller.Create(input, CancellationToken.None);
 
         // assert
         var okResponse = Assert.IsType<OkObjectResult>(result);
@@ -57,7 +57,7 @@ public class CategoryControllerTest
         Assert.Equal(createdModel.Description, dto.Description);
         Assert.Equal(createdModel.ParentId, dto.ParentId);
 
-        _categoryServiceMock.Verify(s => s.CreateAsync(It.IsAny<CategoryModel>()), Times.Once());
+        _categoryServiceMock.Verify(s => s.CreateAsync(It.IsAny<CategoryModel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]
@@ -80,14 +80,16 @@ public class CategoryControllerTest
         };
 
         _categoryServiceMock
-            .Setup(s => s.CreateAsync(It.Is<CategoryModel>(c =>
-                c.Name == input.Name &&
-                c.Description == input.Description &&
-                c.ParentId == input.ParentId)))
+            .Setup(s => s.CreateAsync(
+                It.Is<CategoryModel>(c =>
+                    c.Name == input.Name &&
+                    c.Description == input.Description &&
+                    c.ParentId == input.ParentId), 
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(createdModel);
 
         // act
-        var result = await _controller.Create(input);
+        var result = await _controller.Create(input, CancellationToken.None);
 
         // assert
         var okResponse = Assert.IsType<OkObjectResult>(result);
@@ -98,7 +100,7 @@ public class CategoryControllerTest
         Assert.Equal(createdModel.Description, dto.Description);
         Assert.Equal(createdModel.ParentId, dto.ParentId);
 
-        _categoryServiceMock.Verify(s => s.CreateAsync(It.IsAny<CategoryModel>()), Times.Once());
+        _categoryServiceMock.Verify(s => s.CreateAsync(It.IsAny<CategoryModel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]
@@ -115,17 +117,19 @@ public class CategoryControllerTest
         var expectedMessage = $"Parent category with id {input.ParentId.Value} not found.";
 
         _categoryServiceMock
-            .Setup(s => s.CreateAsync(It.Is<CategoryModel>(c =>
-                c.Name == input.Name &&
-                c.Description == input.Description &&
-                c.ParentId == input.ParentId)))
+            .Setup(s => s.CreateAsync(
+                It.Is<CategoryModel>(c =>
+                    c.Name == input.Name &&
+                    c.Description == input.Description &&
+                    c.ParentId == input.ParentId), 
+                It.IsAny<CancellationToken>()))
             .ThrowsAsync(new KeyNotFoundException(expectedMessage));
 
         // act & assert
-        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.Create(input));
+        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.Create(input, CancellationToken.None));
         Assert.Equal(expectedMessage, ex.Message);
 
-        _categoryServiceMock.Verify(s => s.CreateAsync(It.IsAny<CategoryModel>()), Times.Once());
+        _categoryServiceMock.Verify(s => s.CreateAsync(It.IsAny<CategoryModel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Theory]
@@ -141,15 +145,17 @@ public class CategoryControllerTest
         };
 
         _categoryServiceMock
-            .Setup(s => s.UpdateAsync(It.Is<CategoryModel>(c =>
-                c.Id == id &&
-                c.Name == input.Name &&
-                c.Description == input.Description &&
-                c.ParentId == input.ParentId)))
+            .Setup(s => s.UpdateAsync(
+                It.Is<CategoryModel>(c =>
+                    c.Id == id &&
+                    c.Name == input.Name &&
+                    c.Description == input.Description &&
+                    c.ParentId == input.ParentId), 
+                It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         // act
-        var result = await _controller.Update(id, input);
+        var result = await _controller.Update(id, input, CancellationToken.None);
 
         // assert
         var okResponse = Assert.IsType<OkObjectResult>(result);
@@ -160,7 +166,7 @@ public class CategoryControllerTest
         Assert.Equal(input.Description, dto.Description);
         Assert.Equal(input.ParentId, dto.ParentId);
 
-        _categoryServiceMock.Verify(s => s.UpdateAsync(It.IsAny<CategoryModel>()), Times.Once());
+        _categoryServiceMock.Verify(s => s.UpdateAsync(It.IsAny<CategoryModel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Theory]
@@ -176,15 +182,17 @@ public class CategoryControllerTest
         };
 
         _categoryServiceMock
-            .Setup(s => s.UpdateAsync(It.Is<CategoryModel>(c =>
-                c.Id == id &&
-                c.Name == input.Name &&
-                c.Description == input.Description &&
-                c.ParentId == input.ParentId)))
+            .Setup(s => s.UpdateAsync(
+                It.Is<CategoryModel>(c =>
+                    c.Id == id &&
+                    c.Name == input.Name &&
+                    c.Description == input.Description &&
+                    c.ParentId == input.ParentId), 
+                It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         // act
-        var result = await _controller.Update(id, input);
+        var result = await _controller.Update(id, input, CancellationToken.None);
 
         // assert
         var okResponse = Assert.IsType<OkObjectResult>(result);
@@ -195,7 +203,7 @@ public class CategoryControllerTest
         Assert.Equal(input.Description, dto.Description);
         Assert.Equal(input.ParentId, dto.ParentId);
 
-        _categoryServiceMock.Verify(s => s.UpdateAsync(It.IsAny<CategoryModel>()), Times.Once());
+        _categoryServiceMock.Verify(s => s.UpdateAsync(It.IsAny<CategoryModel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Theory]
@@ -213,18 +221,20 @@ public class CategoryControllerTest
         var expectedMessage = $"Category with id {id} not found";
 
         _categoryServiceMock
-            .Setup(s => s.UpdateAsync(It.Is<CategoryModel>(c =>
-                c.Id == id &&
-                c.Name == input.Name &&
-                c.Description == input.Description &&
-                c.ParentId == input.ParentId)))
+            .Setup(s => s.UpdateAsync(
+                It.Is<CategoryModel>(c =>
+                    c.Id == id &&
+                    c.Name == input.Name &&
+                    c.Description == input.Description &&
+                    c.ParentId == input.ParentId), 
+                It.IsAny<CancellationToken>()))
             .ThrowsAsync(new KeyNotFoundException(expectedMessage));
 
         // act & assert — global exception middleware maps this to 404 ProblemDetails when the API runs end-to-end
-        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.Update(id, input));
+        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.Update(id, input, CancellationToken.None));
         Assert.Equal(expectedMessage, ex.Message);
 
-        _categoryServiceMock.Verify(s => s.UpdateAsync(It.IsAny<CategoryModel>()), Times.Once());
+        _categoryServiceMock.Verify(s => s.UpdateAsync(It.IsAny<CategoryModel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Theory]
@@ -242,18 +252,20 @@ public class CategoryControllerTest
         var expectedMessage = $"Parent category with id {input.ParentId.Value} not found.";
 
         _categoryServiceMock
-            .Setup(s => s.UpdateAsync(It.Is<CategoryModel>(c =>
-                c.Id == id &&
-                c.Name == input.Name &&
-                c.Description == input.Description &&
-                c.ParentId == input.ParentId)))
+            .Setup(s => s.UpdateAsync(
+                It.Is<CategoryModel>(c =>
+                    c.Id == id &&
+                    c.Name == input.Name &&
+                    c.Description == input.Description &&
+                    c.ParentId == input.ParentId), 
+                It.IsAny<CancellationToken>()))
             .ThrowsAsync(new KeyNotFoundException(expectedMessage));
 
         // act & assert
-        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.Update(id, input));
+        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.Update(id, input, CancellationToken.None));
         Assert.Equal(expectedMessage, ex.Message);
 
-        _categoryServiceMock.Verify(s => s.UpdateAsync(It.IsAny<CategoryModel>()), Times.Once());
+        _categoryServiceMock.Verify(s => s.UpdateAsync(It.IsAny<CategoryModel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Theory]
@@ -271,18 +283,20 @@ public class CategoryControllerTest
         var expected = new ArgumentException("Category cannot be its own parent.", nameof(CategoryModel.ParentId));
 
         _categoryServiceMock
-            .Setup(s => s.UpdateAsync(It.Is<CategoryModel>(c =>
-                c.Id == id &&
-                c.Name == input.Name &&
-                c.Description == input.Description &&
-                c.ParentId == input.ParentId)))
+            .Setup(s => s.UpdateAsync(
+                It.Is<CategoryModel>(c =>
+                    c.Id == id &&
+                    c.Name == input.Name &&
+                    c.Description == input.Description &&
+                    c.ParentId == input.ParentId), 
+                It.IsAny<CancellationToken>()))
             .ThrowsAsync(expected);
 
         // act & arrange
-        var ex = await Assert.ThrowsAsync<ArgumentException>(() => _controller.Update(id, input));
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() => _controller.Update(id, input, CancellationToken.None));
         Assert.Equal(expected.Message, ex.Message);
 
-        _categoryServiceMock.Verify(s => s.UpdateAsync(It.IsAny<CategoryModel>()), Times.Once());
+        _categoryServiceMock.Verify(s => s.UpdateAsync(It.IsAny<CategoryModel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Theory]
@@ -299,17 +313,19 @@ public class CategoryControllerTest
         var expectedMessage = "Category hierarchy cannot contain cycles.";
 
         _categoryServiceMock
-            .Setup(s => s.UpdateAsync(It.Is<CategoryModel>(c =>
-                c.Id == id &&
-                c.Name == input.Name &&
-                c.Description == input.Description &&
-                c.ParentId == input.ParentId)))
+            .Setup(s => s.UpdateAsync(
+                It.Is<CategoryModel>(c =>
+                    c.Id == id &&
+                    c.Name == input.Name &&
+                    c.Description == input.Description &&
+                    c.ParentId == input.ParentId), 
+                It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException(expectedMessage));
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _controller.Update(id, input));
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _controller.Update(id, input, CancellationToken.None));
         Assert.Equal(expectedMessage, ex.Message);
 
-        _categoryServiceMock.Verify(s => s.UpdateAsync(It.IsAny<CategoryModel>()), Times.Once());
+        _categoryServiceMock.Verify(s => s.UpdateAsync(It.IsAny<CategoryModel>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Theory]
@@ -325,10 +341,10 @@ public class CategoryControllerTest
             ParentId = null
         };
 
-        _categoryServiceMock.Setup(s => s.GetByIdAsync(id)).ReturnsAsync(category);
+        _categoryServiceMock.Setup(s => s.GetByIdAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(category);
 
         // act
-        var result = await _controller.Get(id);
+        var result = await _controller.Get(id, CancellationToken.None);
 
         // assert
         var okResponse = Assert.IsType<OkObjectResult>(result);
@@ -336,7 +352,7 @@ public class CategoryControllerTest
 
         Assert.Equal(id, dto.Id);
 
-        _categoryServiceMock.Verify(s => s.GetByIdAsync(id), Times.Once);
+        _categoryServiceMock.Verify(s => s.GetByIdAsync(id, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Theory]
@@ -346,14 +362,14 @@ public class CategoryControllerTest
         // arrange
         var expectedMessage = $"Category with id {id} not found";
         _categoryServiceMock
-            .Setup(s => s.GetByIdAsync(id))
+            .Setup(s => s.GetByIdAsync(id, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new KeyNotFoundException(expectedMessage));
 
         // act & assert — global exception middleware maps this to 404 ProblemDetails when the API runs end-to-end
-        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.Get(id));
+        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.Get(id, CancellationToken.None));
         Assert.Equal(expectedMessage, ex.Message);
 
-        _categoryServiceMock.Verify(s => s.GetByIdAsync(id), Times.Once);
+        _categoryServiceMock.Verify(s => s.GetByIdAsync(id, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -378,10 +394,10 @@ public class CategoryControllerTest
             }
         };
 
-        _categoryServiceMock.Setup(s => s.GetAsync()).ReturnsAsync(categories);
+        _categoryServiceMock.Setup(s => s.GetAsync(It.IsAny<CancellationToken>())).ReturnsAsync(categories);
 
         // act
-        var result = await _controller.Get();
+        var result = await _controller.Get(CancellationToken.None);
 
         // assert
         var okResponse = Assert.IsType<OkObjectResult>(result);
@@ -391,6 +407,6 @@ public class CategoryControllerTest
         Assert.Equal(categories[0].Id, dtos[0].Id);
         Assert.Equal(categories[1].Id, dtos[1].Id);
 
-        _categoryServiceMock.Verify(s => s.GetAsync(), Times.Once);
+        _categoryServiceMock.Verify(s => s.GetAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 }

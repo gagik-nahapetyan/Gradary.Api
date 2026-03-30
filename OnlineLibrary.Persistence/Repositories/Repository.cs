@@ -21,9 +21,9 @@ public class Repository<TEntity> : IRepository<TEntity>
         DbSet = _dbContext.Set<TEntity>();
     }
 
-    public async Task<TEntity> InsertAsync(TEntity entity)
+    public async Task<TEntity> InsertAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        var entry = await DbSet.AddAsync(entity);
+        var entry = await DbSet.AddAsync(entity, cancellationToken);
         entity = entry.Entity;
 
         return entity;
@@ -34,23 +34,23 @@ public class Repository<TEntity> : IRepository<TEntity>
         DbSet.Update(entity);
     }
 
-    public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate)
+    public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        var entities = await DbSet.Where(predicate).ToListAsync();
+        var entities = await DbSet.Where(predicate).ToListAsync(cancellationToken);
 
         return entities;
     }
 
-    public async Task<IEnumerable<TEntity>> GetAllAsync()
+    public async Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var entities = await DbSet.ToListAsync();
+        var entities = await DbSet.ToListAsync(cancellationToken);
 
         return entities;
     }
 
-    public async Task<TEntity?> GetByIdAsync(int id)
+    public async Task<TEntity?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        var entity = await DbSet.FindAsync(id);
+        var entity = await DbSet.FindAsync(id, cancellationToken);
 
         return entity;
     }
@@ -60,13 +60,13 @@ public class Repository<TEntity> : IRepository<TEntity>
         DbSet.Remove(entity);
     }
 
-    public async Task SaveChangesAsync()
+    public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<bool> ExistAsync(Expression<Func<TEntity, bool>> predicate)
+    public async Task<bool> ExistAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        return await DbSet.AnyAsync(predicate);
+        return await DbSet.AnyAsync(predicate, cancellationToken);
     }
 }

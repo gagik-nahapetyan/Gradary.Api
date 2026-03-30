@@ -11,7 +11,7 @@ namespace OnlineLibrary.Application.Services;
 /// </summary>
 public class UserService(IUserRepository userRepository) : IUserService
 {
-    public async Task<UserModel> CreateAsync(UserModel userModel)
+    public async Task<UserModel> CreateAsync(UserModel userModel, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(userModel.Password))
             throw new ArgumentException("Password is required when creating a user.", nameof(userModel));
@@ -20,16 +20,16 @@ public class UserService(IUserRepository userRepository) : IUserService
         userModel.Password = null;
 
         var user = userModel.ToEntity();
-        user = await userRepository.InsertAsync(user);
+        user = await userRepository.InsertAsync(user, cancellationToken);
 
-        await userRepository.SaveChangesAsync();
+        await userRepository.SaveChangesAsync(cancellationToken);
 
         return user.ToModel();
     }
 
-    public async Task UpdateAsync(UserModel userModel)
+    public async Task UpdateAsync(UserModel userModel, CancellationToken cancellationToken = default)
     {
-        var existingUser = await userRepository.GetByIdAsync(userModel.Id);
+        var existingUser = await userRepository.GetByIdAsync(userModel.Id, cancellationToken);
         if (existingUser is null)
             throw new KeyNotFoundException($"User with id {userModel.Id} not found");
 
@@ -47,20 +47,20 @@ public class UserService(IUserRepository userRepository) : IUserService
         var user = userModel.ToEntity();
         userRepository.Update(user);
 
-        await userRepository.SaveChangesAsync();
+        await userRepository.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<List<UserModel>> GetAsync()
+    public async Task<List<UserModel>> GetAsync(CancellationToken cancellationToken = default)
     {
-        var users = await userRepository.GetAllAsync();
+        var users = await userRepository.GetAllAsync(cancellationToken);
         var userModels = users.Select(u => u.ToModel()).ToList();
 
         return userModels;
     }
 
-    public async Task<UserModel> GetByIdAsync(int id)
+    public async Task<UserModel> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        var user = await userRepository.GetByIdAsync(id);
+        var user = await userRepository.GetByIdAsync(id, cancellationToken);
         if (user is null)
             throw new KeyNotFoundException($"User with id {id} not found");
 

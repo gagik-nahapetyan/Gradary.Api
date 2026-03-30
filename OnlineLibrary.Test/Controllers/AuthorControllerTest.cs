@@ -36,25 +36,27 @@ public class AuthorControllerTests
         };
 
         _mockAuthorService
-            .Setup(s => s.CreateAsync(It.Is<AuthorModel>(m => 
-                m.FullName == input.FullName && 
-                m.Biography == input.Biography)))
+            .Setup(s => s.CreateAsync(
+                It.Is<AuthorModel>(m =>
+                    m.FullName == input.FullName &&
+                    m.Biography == input.Biography), 
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(createdModel);
 
 
         // act
-        var result = await _controller.Create(input);
+        var result = await _controller.Create(input, CancellationToken.None);
 
 
         // assert
         var okResponse = Assert.IsType<OkObjectResult>(result);
         var dto = Assert.IsType<AuthorDto>(okResponse.Value);
-        
+
         Assert.Equal(createdModel.Id, dto.Id);
         Assert.Equal(input.FullName, dto.FullName);
         Assert.Equal(input.Biography, dto.Biography);
 
-        _mockAuthorService.Verify(s => s.CreateAsync(It.IsAny<AuthorModel>()), Times.Once);
+        _mockAuthorService.Verify(s => s.CreateAsync(It.IsAny<AuthorModel>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Theory]
@@ -69,24 +71,26 @@ public class AuthorControllerTests
         };
 
         _mockAuthorService
-            .Setup(s => s.UpdateAsync(It.Is<AuthorModel>(m => 
-                m.Id == id &&
-                m.FullName == input.FullName &&
-                m.Biography == input.Biography)))
+            .Setup(s => s.UpdateAsync(
+                It.Is<AuthorModel>(m =>
+                    m.Id == id &&
+                    m.FullName == input.FullName &&
+                    m.Biography == input.Biography), 
+                It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         // act
-        var result = await _controller.Update(id, input);
+        var result = await _controller.Update(id, input, CancellationToken.None);
 
         // assert
         var okResponse = Assert.IsType<OkObjectResult>(result);
         var dto = Assert.IsType<AuthorDto>(okResponse.Value);
-        
+
         Assert.Equal(id, dto.Id);
         Assert.Equal(input.FullName, dto.FullName);
         Assert.Equal(input.Biography, dto.Biography);
 
-        _mockAuthorService.Verify(s => s.UpdateAsync(It.IsAny<AuthorModel>()), Times.Once);
+        _mockAuthorService.Verify(s => s.UpdateAsync(It.IsAny<AuthorModel>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Theory]
@@ -102,14 +106,14 @@ public class AuthorControllerTests
 
         var expectedMessage = $"Author with id {id} not found";
         _mockAuthorService
-            .Setup(s => s.UpdateAsync(It.Is<AuthorModel>(m => m.Id == id)))
+            .Setup(s => s.UpdateAsync(It.Is<AuthorModel>(m => m.Id == id), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new KeyNotFoundException(expectedMessage));
 
         // act & assert — global exception middleware maps this to 404 ProblemDetails when the API runs end-to-end
-        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.Update(id, input));
+        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.Update(id, input, CancellationToken.None));
         Assert.Equal(expectedMessage, ex.Message);
 
-        _mockAuthorService.Verify(s => s.UpdateAsync(It.IsAny<AuthorModel>()), Times.Once);
+        _mockAuthorService.Verify(s => s.UpdateAsync(It.IsAny<AuthorModel>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Theory]
@@ -124,10 +128,10 @@ public class AuthorControllerTests
             Biography = "Can't Heart Me"
         };
 
-        _mockAuthorService.Setup(s => s.GetByIdAsync(id)).ReturnsAsync(author);
+        _mockAuthorService.Setup(s => s.GetByIdAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(author);
 
         // act
-        var result = await _controller.Get(id);
+        var result = await _controller.Get(id, CancellationToken.None);
 
         // assert
         var okResponse = Assert.IsType<OkObjectResult>(result);
@@ -135,7 +139,7 @@ public class AuthorControllerTests
 
         Assert.Equal(id, dto.Id);
 
-        _mockAuthorService.Verify(s => s.GetByIdAsync(id), Times.Once);
+        _mockAuthorService.Verify(s => s.GetByIdAsync(id, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Theory]
@@ -145,14 +149,14 @@ public class AuthorControllerTests
         // arrange
         var expectedMessage = $"Author with id {id} not found";
         _mockAuthorService
-            .Setup(s => s.GetByIdAsync(id))
+            .Setup(s => s.GetByIdAsync(id, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new KeyNotFoundException(expectedMessage));
 
         // act & assert — global exception middleware maps this to 404 ProblemDetails when the API runs end-to-end
-        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.Get(id));
+        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.Get(id, CancellationToken.None));
         Assert.Equal(expectedMessage, ex.Message);
 
-        _mockAuthorService.Verify(s => s.GetByIdAsync(id), Times.Once);
+        _mockAuthorService.Verify(s => s.GetByIdAsync(id, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -175,10 +179,10 @@ public class AuthorControllerTests
             }
         };
 
-        _mockAuthorService.Setup(s => s.GetAsync()).ReturnsAsync(authors);
+        _mockAuthorService.Setup(s => s.GetAsync(It.IsAny<CancellationToken>())).ReturnsAsync(authors);
 
         // act
-        var result = await _controller.Get();
+        var result = await _controller.Get(CancellationToken.None);
 
         // assert
         var okResponse = Assert.IsType<OkObjectResult>(result);
@@ -188,6 +192,6 @@ public class AuthorControllerTests
         Assert.Equal(authors[0].Id, dtos[0].Id);
         Assert.Equal(authors[1].Id, dtos[1].Id);
 
-        _mockAuthorService.Verify(s => s.GetAsync(), Times.Once);
+        _mockAuthorService.Verify(s => s.GetAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 }

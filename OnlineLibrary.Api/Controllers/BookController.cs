@@ -1,5 +1,8 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using OnlineLibrary.Api.Dtos.Book;
+using OnlineLibrary.Domain.Settings;
 using OnlineLibrary.Application.Abstractions.Services;
 
 namespace OnlineLibrary.Api.Controllers;
@@ -7,8 +10,10 @@ namespace OnlineLibrary.Api.Controllers;
 [Route("api/books")]
 [ApiController]
 [Produces("application/json")]
-public class BookController(IBookService bookService) : ControllerBase
+public class BookController(IBookService bookService, IOptions<FileUploadSettings> fileUploadSettingsOptions) : ControllerBase
 {
+    private readonly FileUploadSettings fileUploadSettings = fileUploadSettingsOptions.Value;
+
     /// <summary>Creates a new book.</summary>
     /// <param name="input">The book details.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -62,8 +67,14 @@ public class BookController(IBookService bookService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> UploadFile(int id, IFormFile file, CancellationToken cancellationToken)
+    public async Task<IActionResult> UploadFile(int id, [Required] IFormFile file, CancellationToken cancellationToken)
     {
+        if (file.Length == 0)
+            return BadRequest("File must not be empty.");
+
+        if (file.Length > fileUploadSettings.MaxFileSizeBytes)
+            return BadRequest($"File size must not exceed {fileUploadSettings.MaxFileSizeBytes / (1024 * 1024)} MB.");
+
         await bookService.UploadFileAsync(id, file.OpenReadStream, cancellationToken);
 
         return NoContent();

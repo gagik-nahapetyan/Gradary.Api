@@ -11,19 +11,14 @@ public class BookService(IBookRepository bookRepository) : IBookService
 {
     public async Task<BookModel> CreateAsync(BookModel bookModel, CancellationToken cancellationToken = default)
     {
-        var bookWithSameTitleExists = await bookRepository.ExistAsync(b => b.Title.ToLower()  == bookModel.Title.ToLower());
-        if (bookWithSameTitleExists)
+        var bookWithTitleExists = await bookRepository.ExistAsync(b => string.Equals(b.Title, bookModel.Title, StringComparison.OrdinalIgnoreCase), cancellationToken);
+        if (bookWithTitleExists)
             throw new ArgumentException($"Book with title {bookModel.Title} already exists");
 
         var book = bookModel.ToEntity();
-        book = await bookRepository.InsertAsync(book);
+        book = await bookRepository.InsertAsync(book, cancellationToken);
 
-        await bookRepository.SaveChangesAsync();
-
-        bookModel.Id = book.Id;
-
-        if (bookModel.Stream is not null)
-            await UploadFileAsync(bookModel, bookModel.Stream, cancellationToken);
+        await bookRepository.SaveChangesAsync(cancellationToken);
 
         return book.ToModel();
     }
@@ -34,7 +29,7 @@ public class BookService(IBookRepository bookRepository) : IBookService
         if (!bookExists)
             throw new KeyNotFoundException($"Book with id {bookModel.Id} not found");
 
-        var bookWithSameTitleExists = await bookRepository.ExistAsync(b => b.Id != bookModel.Id && b.Title.ToLower() == bookModel.Title.ToLower(), cancellationToken);
+        var bookWithSameTitleExists = await bookRepository.ExistAsync(b => b.Id != bookModel.Id && string.Equals(b.Title, bookModel.Title, StringComparison.OrdinalIgnoreCase), cancellationToken);
         if (bookWithSameTitleExists)
             throw new ArgumentException($"Book with title {bookModel.Title} already exists");
 
@@ -42,9 +37,22 @@ public class BookService(IBookRepository bookRepository) : IBookService
         bookRepository.Update(book);
 
         await bookRepository.SaveChangesAsync(cancellationToken);
+    }
 
-        if (bookModel.Stream is not null)
-            await UploadFileAsync(bookModel, bookModel.Stream, cancellationToken);
+    public async Task UploadFileAsync(int id, Func<Stream> openStream, CancellationToken cancellationToken = default)
+    {
+        var bookExists = await bookRepository.ExistAsync(b => b.Id == id, cancellationToken);
+        if (!bookExists)
+            throw new KeyNotFoundException($"Book with id {id} not found");
+
+        var directory = $"{Directory.GetParent(Environment.CurrentDirectory)!.FullName}\\BookFiles";
+        if (!Directory.Exists(directory))
+            Directory.CreateDirectory(directory);
+
+        var fullPath = $"{directory}\\{id}";
+        using var stream = openStream();
+        using var fileStream = new FileStream(fullPath, FileMode.Create);
+        await stream.CopyToAsync(fileStream, cancellationToken);
     }
 
     public async Task<BookModel> GetByIdAsync(int id, CancellationToken cancellationToken = default)
@@ -53,31 +61,12 @@ public class BookService(IBookRepository bookRepository) : IBookService
         if (book is null)
             throw new KeyNotFoundException($"Book with id {id} not found");
 
-        var bookModel = book.ToModel();
-
-        return bookModel;
+        return book.ToModel();
     }
 
     public async Task<List<BookModel>> GetAsync(CancellationToken cancellationToken = default)
     {
         var books = await bookRepository.GetAllAsync(cancellationToken);
-        var bookModels = books.Select(b => b.ToModel()).ToList();
-
-        return bookModels;
-    }
-
-    private async Task UploadFileAsync(BookModel bookModel, Stream inputStream, CancellationToken cancellationToken = default)
-    {
-        var directory = $"{Directory.GetParent(Environment.CurrentDirectory)!.FullName}\\BookFiles";
-        if (!Directory.Exists(directory))
-        {
-            Directory.CreateDirectory(directory);
-        }
-
-        var fullPath = $"{directory}\\{bookModel.Id}_{bookModel.Title}";
-
-        using var fileStream = new FileStream(fullPath, FileMode.Create);
-
-        await inputStream.CopyToAsync(fileStream, cancellationToken);
+        return [.. books.Select(b => b.ToModel())];
     }
 }

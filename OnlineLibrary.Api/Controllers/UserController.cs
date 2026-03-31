@@ -7,10 +7,20 @@ namespace OnlineLibrary.Api.Controllers;
 
 [Route("api/users")]
 [ApiController]
+[Produces("application/json")]
 public class UserController(IUserService userService) : ControllerBase
 {
+    /// <summary>Creates a new user.</summary>
+    /// <param name="input">The user details.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">Returns the created user.</response>
+    /// <response code="400">If the request body is invalid or the password is missing.</response>
+    /// <response code="500">If an unexpected error occurred.</response>
     [HttpPost]
-    public async Task<IActionResult> Create(UserRequest input, CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> Create([FromBody] UserRequest input, CancellationToken cancellationToken)
     {
         var model = input.ToModel();
         model = await userService.CreateAsync(model, cancellationToken);
@@ -18,8 +28,20 @@ public class UserController(IUserService userService) : ControllerBase
         return Ok(model.ToDto());
     }
 
+    /// <summary>Updates an existing user.</summary>
+    /// <param name="id">The id of the user to update.</param>
+    /// <param name="input">The updated user details. Omit password to keep the existing one.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">Returns the updated user.</response>
+    /// <response code="400">If the request body is invalid.</response>
+    /// <response code="404">If the user was not found.</response>
+    /// <response code="500">If an unexpected error occurred.</response>
     [HttpPut("{id:int:min(1)}")]
-    public async Task<IActionResult> Update(int id, UserRequest input, CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> Update(int id, [FromBody] UserRequest input, CancellationToken cancellationToken)
     {
         var model = input.ToModel(id);
         await userService.UpdateAsync(model, cancellationToken);
@@ -27,7 +49,16 @@ public class UserController(IUserService userService) : ControllerBase
         return Ok(model.ToDto());
     }
 
+    /// <summary>Gets a user by id.</summary>
+    /// <param name="id">The id of the user.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">Returns the user.</response>
+    /// <response code="404">If the user was not found.</response>
+    /// <response code="500">If an unexpected error occurred.</response>
     [HttpGet("{id:int:min(1)}")]
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Get(int id, CancellationToken cancellationToken)
     {
         var model = await userService.GetByIdAsync(id, cancellationToken);
@@ -36,7 +67,13 @@ public class UserController(IUserService userService) : ControllerBase
         return Ok(dto);
     }
 
+    /// <summary>Gets all users.</summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">Returns the list of users.</response>
+    /// <response code="500">If an unexpected error occurred.</response>
     [HttpGet]
+    [ProducesResponseType(typeof(List<UserDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Get(CancellationToken cancellationToken)
     {
         var users = await userService.GetAsync(cancellationToken);

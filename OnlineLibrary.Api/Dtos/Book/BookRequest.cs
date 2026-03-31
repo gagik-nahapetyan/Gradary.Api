@@ -29,10 +29,5 @@ public class BookRequest
     /// The description of the book.
     /// </summary>
     public string? Description { get; set; }
-
-    /// <summary>
-    /// The content file of the book.
-    /// </summary>
-    public IFormFile? File { get; set; }
 }
 

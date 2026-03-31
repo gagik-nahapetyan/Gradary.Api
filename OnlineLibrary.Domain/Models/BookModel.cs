@@ -29,9 +29,4 @@ public class BookModel : AuditModel
     /// The description of the book.
     /// </summary>
     public string? Description { get; set; }
-
-    /// <summary>
-    /// The stream of the book file.
-    /// </summary>
-    public Stream? Stream { get; set; }
 }

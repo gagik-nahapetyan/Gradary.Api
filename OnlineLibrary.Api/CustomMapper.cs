@@ -16,8 +16,9 @@ public static class CustomMapper
     /// Maps <see cref="BookRequest"/> to <see cref="BookModel"/>.
     /// </summary>
     /// <param name="dto">The provided object to map from.</param>
+    /// <param name="id">The id of the book.</param>
     /// <returns>The book model.</returns>
-    public static BookModel ToModel(this BookRequest dto, int id = 0, Stream? stream = null)
+    public static BookModel ToModel(this BookRequest dto, int id = 0)
     {
         return new BookModel
         {
@@ -26,8 +27,7 @@ public static class CustomMapper
             Subtitle = dto.Subtitle,
             Description = dto.Description,
             AuthorId = dto.AuthorId,
-            CategoryId = dto.CategoryId,
-            Stream = stream
+            CategoryId = dto.CategoryId
         };
     }
 

@@ -48,6 +48,27 @@ public class BookController(IBookService bookService) : ControllerBase
         return Ok(model.ToDto());
     }
 
+    /// <summary>Uploads or replaces the file for a book.</summary>
+    /// <param name="id">The id of the book.</param>
+    /// <param name="file">The file to upload.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="204">File uploaded successfully.</response>
+    /// <response code="400">If no file was provided.</response>
+    /// <response code="404">If the book was not found.</response>
+    /// <response code="500">If an unexpected error occurred.</response>
+    [HttpPost("{id:int:min(1)}/file")]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> UploadFile(int id, IFormFile file, CancellationToken cancellationToken)
+    {
+        await bookService.UploadFileAsync(id, file.OpenReadStream, cancellationToken);
+
+        return NoContent();
+    }
+
     /// <summary>Gets a book by id.</summary>
     /// <param name="id">The id of the book.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -78,26 +99,5 @@ public class BookController(IBookService bookService) : ControllerBase
         var books = await bookService.GetAsync(cancellationToken);
 
         return Ok(books.Select(b => b.ToDto()));
-    }
-
-    /// <summary>Uploads or replaces the file for a book.</summary>
-    /// <param name="id">The id of the book.</param>
-    /// <param name="file">The file to upload.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <response code="204">File uploaded successfully.</response>
-    /// <response code="400">If no file was provided.</response>
-    /// <response code="404">If the book was not found.</response>
-    /// <response code="500">If an unexpected error occurred.</response>
-    [HttpPost("{id:int:min(1)}/file")]
-    [Consumes("multipart/form-data")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> UploadFile(int id, IFormFile file, CancellationToken cancellationToken)
-    {
-        await bookService.UploadFileAsync(id, file.OpenReadStream, cancellationToken);
-
-        return NoContent();
     }
 }

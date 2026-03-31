@@ -2,6 +2,7 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using OnlineLibrary.Api.ExceptionHandlers;
+using OnlineLibrary.Domain.Settings;
 using OnlineLibrary.Application.Extensions;
 using OnlineLibrary.Persistence;
 using OnlineLibrary.Persistence.Extensions;
@@ -14,7 +15,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -35,6 +35,7 @@ builder.Services.AddDbContext<OnlineLibraryDbContext>(
         .AddInterceptors(new AuditInterceptor())
     );
 
+builder.Services.Configure<FileUploadSettings>(builder.Configuration.GetSection("FileUpload"));
 builder.Services.AddServices();
 builder.Services.AddRepositories();
 

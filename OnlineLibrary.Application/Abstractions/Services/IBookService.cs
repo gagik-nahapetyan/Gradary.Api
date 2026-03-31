@@ -38,4 +38,12 @@ public interface IBookService
     /// <param name="cancellationToken">The token to cancel the operation.</param>
     /// <returns>Task representing an asynchronous operation, wrapping the list of book models.</returns>
     Task<List<BookModel>> GetAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Uploads the file for a book.
+    /// </summary>
+    /// <param name="id">The id of the book.</param>
+    /// <param name="openStream">A delegate that opens the file stream when invoked.</param>
+    /// <param name="cancellationToken">The token to cancel the operation.</param>
+    Task UploadFileAsync(int id, Func<Stream> openStream, CancellationToken cancellationToken = default);
 }

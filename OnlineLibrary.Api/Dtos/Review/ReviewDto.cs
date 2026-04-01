@@ -1,3 +1,5 @@
+using OnlineLibrary.Domain.Enums;
+
 namespace OnlineLibrary.Api.Dtos.Review;
 
 /// <summary>
@@ -23,7 +25,7 @@ public class ReviewDto
     /// <summary>
     /// The rating of the book.
     /// </summary>
-    public int Rating { get; set; }
+    public BookRating Rating { get; set; }
     
     /// <summary>
     /// The review of the book.

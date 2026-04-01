@@ -1,4 +1,6 @@
-﻿namespace OnlineLibrary.Domain.Entities;
+﻿using OnlineLibrary.Domain.Enums;
+
+namespace OnlineLibrary.Domain.Entities;
 
 /// <summary>
 /// Represents the <see cref="Review"/> entity.
@@ -18,12 +20,12 @@ public class Review : AuditEntity
     /// <summary>
     /// The rating of the book.
     /// </summary>
-    public int Rating { get; set; }
+    public BookRating Rating { get; set; }
 
     /// <summary>
     /// The review of the book
     /// </summary>
-    public required string Comment { get; set; }
+    public string? Comment { get; set; }
 
 
     /// <summary>

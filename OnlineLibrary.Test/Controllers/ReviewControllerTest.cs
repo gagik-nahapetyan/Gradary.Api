@@ -110,6 +110,54 @@ public class ReviewControllerTests
         _mockReviewService.Verify(s => s.UpdateAsync(It.IsAny<ReviewModel>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    [Fact]
+    public async Task CreateReview_ShouldThrowKeyNotFoundException_WhenBookDoesNotExist()
+    {
+        // arrange
+        var input = new ReviewRequest
+        {
+            UserId = 1,
+            BookId = 999,
+            Rating = BookRating.FourStars,
+            Comment = "Great book"
+        };
+
+        var expectedMessage = $"Book with id {input.BookId} not found";
+        _mockReviewService
+            .Setup(s => s.CreateAsync(It.Is<ReviewModel>(m => m.BookId == input.BookId), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new KeyNotFoundException(expectedMessage));
+
+        // act & assert — global exception middleware maps this to 404 ProblemDetails when the API runs end-to-end
+        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.Create(input, CancellationToken.None));
+        Assert.Equal(expectedMessage, ex.Message);
+
+        _mockReviewService.Verify(s => s.CreateAsync(It.IsAny<ReviewModel>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateReview_ShouldThrowKeyNotFoundException_WhenUserDoesNotExist()
+    {
+        // arrange
+        var input = new ReviewRequest
+        {
+            UserId = 999,
+            BookId = 5,
+            Rating = BookRating.FourStars,
+            Comment = "Great book"
+        };
+
+        var expectedMessage = $"User with id {input.UserId} not found";
+        _mockReviewService
+            .Setup(s => s.CreateAsync(It.Is<ReviewModel>(m => m.UserId == input.UserId), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new KeyNotFoundException(expectedMessage));
+
+        // act & assert — global exception middleware maps this to 404 ProblemDetails when the API runs end-to-end
+        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.Create(input, CancellationToken.None));
+        Assert.Equal(expectedMessage, ex.Message);
+
+        _mockReviewService.Verify(s => s.CreateAsync(It.IsAny<ReviewModel>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
     [Theory]
     [InlineData(999)]
     public async Task UpdateReview_ShouldThrowKeyNotFoundException_WhenReviewDoesNotExist(int id)
@@ -128,6 +176,56 @@ public class ReviewControllerTests
             .Setup(s => s.UpdateAsync(It.Is<ReviewModel>(m => m.Id == id), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new KeyNotFoundException(expectedMessage));
 
+
+        // act & assert — global exception middleware maps this to 404 ProblemDetails when the API runs end-to-end
+        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.Update(id, input, CancellationToken.None));
+        Assert.Equal(expectedMessage, ex.Message);
+
+        _mockReviewService.Verify(s => s.UpdateAsync(It.IsAny<ReviewModel>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(10)]
+    public async Task UpdateReview_ShouldThrowKeyNotFoundException_WhenBookDoesNotExist(int id)
+    {
+        // arrange
+        var input = new ReviewRequest
+        {
+            UserId = 1,
+            BookId = 999,
+            Rating = BookRating.FiveStars,
+            Comment = "Excellent!"
+        };
+
+        var expectedMessage = $"Book with id {input.BookId} not found";
+        _mockReviewService
+            .Setup(s => s.UpdateAsync(It.Is<ReviewModel>(m => m.Id == id && m.BookId == input.BookId), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new KeyNotFoundException(expectedMessage));
+
+        // act & assert — global exception middleware maps this to 404 ProblemDetails when the API runs end-to-end
+        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.Update(id, input, CancellationToken.None));
+        Assert.Equal(expectedMessage, ex.Message);
+
+        _mockReviewService.Verify(s => s.UpdateAsync(It.IsAny<ReviewModel>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(10)]
+    public async Task UpdateReview_ShouldThrowKeyNotFoundException_WhenUserDoesNotExist(int id)
+    {
+        // arrange
+        var input = new ReviewRequest
+        {
+            UserId = 999,
+            BookId = 5,
+            Rating = BookRating.FiveStars,
+            Comment = "Excellent!"
+        };
+
+        var expectedMessage = $"User with id {input.UserId} not found";
+        _mockReviewService
+            .Setup(s => s.UpdateAsync(It.Is<ReviewModel>(m => m.Id == id && m.UserId == input.UserId), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new KeyNotFoundException(expectedMessage));
 
         // act & assert — global exception middleware maps this to 404 ProblemDetails when the API runs end-to-end
         var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.Update(id, input, CancellationToken.None));

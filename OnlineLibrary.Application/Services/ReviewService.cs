@@ -7,10 +7,19 @@ namespace OnlineLibrary.Application.Services;
 /// <summary>
 /// Represents an <see cref="ReviewService"/>.
 /// </summary>
-public class ReviewService(IReviewRepository reviewRepository) : IReviewService
+public class ReviewService(
+    IReviewRepository reviewRepository,
+    IBookRepository bookRepository,
+    IUserRepository userRepository) : IReviewService
 {
     public async Task<ReviewModel> CreateAsync(ReviewModel reviewModel, CancellationToken cancellationToken = default)
     {
+        if (!await bookRepository.ExistAsync(b => b.Id == reviewModel.BookId, cancellationToken))
+            throw new KeyNotFoundException($"Book with id {reviewModel.BookId} not found");
+
+        if (!await userRepository.ExistAsync(u => u.Id == reviewModel.UserId, cancellationToken))
+            throw new KeyNotFoundException($"User with id {reviewModel.UserId} not found");
+
         var review = reviewModel.ToEntity();
         review = await reviewRepository.InsertAsync(review, cancellationToken);
 
@@ -24,6 +33,12 @@ public class ReviewService(IReviewRepository reviewRepository) : IReviewService
         var existingReview = await reviewRepository.GetByIdAsync(reviewModel.Id, cancellationToken);
         if (existingReview is null)
             throw new KeyNotFoundException($"Review with id {reviewModel.Id} not found");
+
+        if (!await bookRepository.ExistAsync(b => b.Id == reviewModel.BookId, cancellationToken))
+            throw new KeyNotFoundException($"Book with id {reviewModel.BookId} not found");
+
+        if (!await userRepository.ExistAsync(u => u.Id == reviewModel.UserId, cancellationToken))
+            throw new KeyNotFoundException($"User with id {reviewModel.UserId} not found");
 
         var review = reviewModel.ToEntity();
         reviewRepository.Update(review);

@@ -30,6 +30,6 @@ public class ReviewDto
     /// <summary>
     /// The review of the book.
     /// </summary>
-    public required string Comment { get; set; }
+    public string? Comment { get; set; }
 }
 

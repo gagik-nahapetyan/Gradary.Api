@@ -6,6 +6,7 @@
 /// </summary>
 public enum UserRole
 {
-    Admin,
-    User
+    Member,
+    Librarian,
+    Admin
 }

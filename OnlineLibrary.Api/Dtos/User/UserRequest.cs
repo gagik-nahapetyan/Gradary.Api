@@ -27,4 +27,3 @@ public class UserRequest
     /// </summary>
     public UserRole Role { get; set; }
 }
-

@@ -58,7 +58,7 @@ public static class CustomMapper
             Id = model.Id,
             FullName = model.FullName,
             Email = model.Email,
-            PasswordHash = model.PasswordHash,
+            PasswordHash = model.PasswordHash!,
             Role = model.Role,
             CreatedAt = model.CreatedAt,
             CreatedBy = model.CreatedBy,

@@ -81,21 +81,35 @@ public static class CustomMapper
     }
 
     /// <summary>
-    /// Maps <see cref="UserRequest"/> to <see cref="UserModel"/>.
+    /// Maps <see cref="UserCreateRequest"/> to <see cref="UserModel"/>.
     /// </summary>
-    /// <param name="dto">The request to map from.</param>
-    /// <param name="id">The user id; use 0 for create, existing id for update.</param>
+    /// <param name="dto">The create request to map from.</param>
     /// <returns>The user model.</returns>
-    public static UserModel ToModel(this UserRequest dto, int id = 0)
+    public static UserModel ToModel(this UserCreateRequest dto)
+    {
+        return new UserModel
+        {
+            FullName = dto.FullName,
+            Email = dto.Email,
+            Role = dto.Role
+        };
+    }
+
+    /// <summary>
+    /// Maps <see cref="UserUpdateRequest"/> to <see cref="UserModel"/>.
+    /// Does not carry a password; the service preserves the existing hash.
+    /// </summary>
+    /// <param name="dto">The update request to map from.</param>
+    /// <param name="id">The id of the user being updated.</param>
+    /// <returns>The user model.</returns>
+    public static UserModel ToModel(this UserUpdateRequest dto, int id)
     {
         return new UserModel
         {
             Id = id,
             FullName = dto.FullName,
             Email = dto.Email,
-            PasswordHash = string.Empty,
-            Role = dto.Role,
-            Password = string.IsNullOrEmpty(dto.Password) ? null : dto.Password
+            Role = dto.Role
         };
     }
 

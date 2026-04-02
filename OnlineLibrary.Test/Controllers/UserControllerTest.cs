@@ -23,7 +23,7 @@ public class UserControllerTests
     public async Task CreateUser_ShouldCreateUser_WhenInputIsValid()
     {
         // arrange
-        var input = new UserRequest
+        var input = new UserCreateRequest
         {
             FullName = "David Goggins",
             Email = "david@goggins.com",
@@ -46,6 +46,7 @@ public class UserControllerTests
                     m.FullName == input.FullName &&
                     m.Email == input.Email &&
                     m.Role == input.Role),
+                input.Password,
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(createdModel);
 
@@ -61,43 +62,18 @@ public class UserControllerTests
         Assert.Equal(input.Email, dto.Email);
         Assert.Equal(input.Role, dto.Role);
 
-        _mockUserService.Verify(s => s.CreateAsync(It.IsAny<UserModel>(), It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Fact]
-    public async Task CreateUser_ShouldThrowArgumentException_WhenPasswordIsMissing()
-    {
-        // arrange
-        var input = new UserRequest
-        {
-            FullName = "David Goggins",
-            Email = "david@goggins.com",
-            Password = null,
-            Role = UserRole.Member
-        };
-
-        var expectedMessage = "Password is required when creating a user. (Parameter 'userModel')";
-        _mockUserService
-            .Setup(s => s.CreateAsync(It.IsAny<UserModel>(), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new ArgumentException("Password is required when creating a user.", "userModel"));
-
-        // act & assert — global exception middleware maps this to 400 ProblemDetails when the API runs end-to-end
-        var ex = await Assert.ThrowsAsync<ArgumentException>(() => _controller.Create(input, CancellationToken.None));
-        Assert.Equal(expectedMessage, ex.Message);
-
-        _mockUserService.Verify(s => s.CreateAsync(It.IsAny<UserModel>(), It.IsAny<CancellationToken>()), Times.Once);
+        _mockUserService.Verify(s => s.CreateAsync(It.IsAny<UserModel>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Theory]
     [InlineData(1)]
-    public async Task UpdateUser_ShouldUpdateUser_WhenPasswordIsProvided(int id)
+    public async Task UpdateUser_ShouldUpdateUser_WhenInputIsValid(int id)
     {
         // arrange
-        var input = new UserRequest
+        var input = new UserUpdateRequest
         {
             FullName = "David Goggins",
             Email = "david@goggins.com",
-            Password = "NewStrongPass456!",
             Role = UserRole.Member
         };
 
@@ -127,48 +103,11 @@ public class UserControllerTests
     }
 
     [Theory]
-    [InlineData(1)]
-    public async Task UpdateUser_ShouldUpdateUser_WhenPasswordIsOmitted(int id)
-    {
-        // arrange
-        var input = new UserRequest
-        {
-            FullName = "David Goggins",
-            Email = "david@goggins.com",
-            Password = null,
-            Role = UserRole.Member
-        };
-
-        _mockUserService
-            .Setup(s => s.UpdateAsync(
-                It.Is<UserModel>(m =>
-                    m.Id == id &&
-                    m.FullName == input.FullName &&
-                    m.Email == input.Email &&
-                    m.Password == null),
-                It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
-
-        // act
-        var result = await _controller.Update(id, input, CancellationToken.None);
-
-        // assert
-        var okResponse = Assert.IsType<OkObjectResult>(result);
-        var dto = Assert.IsType<UserDto>(okResponse.Value);
-
-        Assert.Equal(id, dto.Id);
-        Assert.Equal(input.FullName, dto.FullName);
-        Assert.Equal(input.Email, dto.Email);
-
-        _mockUserService.Verify(s => s.UpdateAsync(It.IsAny<UserModel>(), It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Theory]
     [InlineData(999)]
     public async Task UpdateUser_ShouldThrowKeyNotFoundException_WhenUserDoesNotExist(int id)
     {
         // arrange
-        var input = new UserRequest
+        var input = new UserUpdateRequest
         {
             FullName = "David Goggins",
             Email = "david@goggins.com",
@@ -185,6 +124,45 @@ public class UserControllerTests
         Assert.Equal(expectedMessage, ex.Message);
 
         _mockUserService.Verify(s => s.UpdateAsync(It.IsAny<UserModel>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    public async Task UpdatePassword_ShouldReturnNoContent_WhenUserExists(int id)
+    {
+        // arrange
+        var input = new UpdatePasswordRequest { NewPassword = "NewStrongPass456!" };
+
+        _mockUserService
+            .Setup(s => s.UpdatePasswordAsync(id, input.NewPassword, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        // act
+        var result = await _controller.UpdatePassword(id, input, CancellationToken.None);
+
+        // assert
+        Assert.IsType<NoContentResult>(result);
+
+        _mockUserService.Verify(s => s.UpdatePasswordAsync(id, input.NewPassword, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(999)]
+    public async Task UpdatePassword_ShouldThrowKeyNotFoundException_WhenUserDoesNotExist(int id)
+    {
+        // arrange
+        var input = new UpdatePasswordRequest { NewPassword = "NewStrongPass456!" };
+
+        var expectedMessage = $"User with id {id} not found";
+        _mockUserService
+            .Setup(s => s.UpdatePasswordAsync(id, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new KeyNotFoundException(expectedMessage));
+
+        // act & assert — global exception middleware maps this to 404 ProblemDetails when the API runs end-to-end
+        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.UpdatePassword(id, input, CancellationToken.None));
+        Assert.Equal(expectedMessage, ex.Message);
+
+        _mockUserService.Verify(s => s.UpdatePasswordAsync(id, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Theory]

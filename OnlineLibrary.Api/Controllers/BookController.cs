@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using OnlineLibrary.Api.Dtos.Book;
@@ -9,6 +10,7 @@ namespace OnlineLibrary.Api.Controllers;
 
 [Route("api/books")]
 [ApiController]
+[Authorize]
 [Produces("application/json")]
 public class BookController(IBookService bookService, IOptions<FileUploadSettings> fileUploadSettingsOptions) : ControllerBase
 {
@@ -21,6 +23,7 @@ public class BookController(IBookService bookService, IOptions<FileUploadSetting
     /// <response code="400">If the request body is invalid or the title already exists.</response>
     /// <response code="500">If an unexpected error occurred.</response>
     [HttpPost]
+    [Authorize(Roles = "Admin,Librarian")]
     [ProducesResponseType(typeof(BookDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -41,6 +44,7 @@ public class BookController(IBookService bookService, IOptions<FileUploadSetting
     /// <response code="404">If the book was not found.</response>
     /// <response code="500">If an unexpected error occurred.</response>
     [HttpPut("{id:int:min(1)}")]
+    [Authorize(Roles = "Admin,Librarian")]
     [ProducesResponseType(typeof(BookDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -62,6 +66,7 @@ public class BookController(IBookService bookService, IOptions<FileUploadSetting
     /// <response code="404">If the book was not found.</response>
     /// <response code="500">If an unexpected error occurred.</response>
     [HttpPost("{id:int:min(1)}/file")]
+    [Authorize(Roles = "Admin,Librarian")]
     [Consumes("multipart/form-data")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -87,6 +92,7 @@ public class BookController(IBookService bookService, IOptions<FileUploadSetting
     /// <response code="404">If the book was not found.</response>
     /// <response code="500">If an unexpected error occurred.</response>
     [HttpGet("{id:int:min(1)}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(BookDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -103,6 +109,7 @@ public class BookController(IBookService bookService, IOptions<FileUploadSetting
     /// <response code="200">Returns the list of books.</response>
     /// <response code="500">If an unexpected error occurred.</response>
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(List<BookDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Get(CancellationToken cancellationToken)

@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-using System.Text;
 using OnlineLibrary.Application.Abstractions.Repositories;
 using OnlineLibrary.Application.Abstractions.Services;
 using OnlineLibrary.Domain.Models;
@@ -9,11 +7,11 @@ namespace OnlineLibrary.Application.Services;
 /// <summary>
 /// Represents a <see cref="UserService"/>.
 /// </summary>
-public class UserService(IUserRepository userRepository) : IUserService
+public class UserService(IUserRepository userRepository, IPasswordHasher passwordHasher) : IUserService
 {
     public async Task<UserModel> CreateAsync(UserModel userModel, string password, CancellationToken cancellationToken = default)
     {
-        userModel.PasswordHash = HashPassword(password);
+        userModel.PasswordHash = passwordHasher.Hash(password);
 
         var user = userModel.ToEntity();
         user = await userRepository.InsertAsync(user, cancellationToken);
@@ -43,7 +41,7 @@ public class UserService(IUserRepository userRepository) : IUserService
         if (existingUser is null)
             throw new KeyNotFoundException($"User with id {id} not found");
 
-        existingUser.PasswordHash = HashPassword(newPassword);
+        existingUser.PasswordHash = passwordHasher.Hash(newPassword);
         userRepository.Update(existingUser);
 
         await userRepository.SaveChangesAsync(cancellationToken);
@@ -66,27 +64,5 @@ public class UserService(IUserRepository userRepository) : IUserService
         var userModel = user.ToModel();
 
         return userModel;
-    }
-
-    private static string HashPassword(string password)
-    {
-        // Derive a PBKDF2 hash and store as: {iterations}.{salt}.{hash}, all Base64-encoded.
-        const int iterations = 100_000;
-        const int saltSize = 16; // 128-bit salt
-        const int keySize = 32;  // 256-bit key
-
-        var salt = RandomNumberGenerator.GetBytes(saltSize);
-
-        var hash = Rfc2898DeriveBytes.Pbkdf2(
-            Encoding.UTF8.GetBytes(password),
-            salt,
-            iterations,
-            HashAlgorithmName.SHA256,
-            keySize);
-
-        var saltBase64 = Convert.ToBase64String(salt);
-        var hashBase64 = Convert.ToBase64String(hash);
-
-        return $"{iterations}.{saltBase64}.{hashBase64}";
     }
 }

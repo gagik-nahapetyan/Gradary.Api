@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OnlineLibrary;
 using OnlineLibrary.Api.Dtos.User;
@@ -7,6 +8,7 @@ namespace OnlineLibrary.Api.Controllers;
 
 [Route("api/users")]
 [ApiController]
+[Authorize]
 [Produces("application/json")]
 public class UserController(IUserService userService) : ControllerBase
 {
@@ -15,8 +17,11 @@ public class UserController(IUserService userService) : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <response code="200">Returns the created user.</response>
     /// <response code="400">If the request body is invalid or the password is missing.</response>
+    /// <response code="401">If the request is not authenticated.</response>
+    /// <response code="403">If the user does not have the required role.</response>
     /// <response code="500">If an unexpected error occurred.</response>
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -90,8 +95,11 @@ public class UserController(IUserService userService) : ControllerBase
     /// <summary>Gets all users.</summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <response code="200">Returns the list of users.</response>
+    /// <response code="401">If the request is not authenticated.</response>
+    /// <response code="403">If the user does not have the required role.</response>
     /// <response code="500">If an unexpected error occurred.</response>
     [HttpGet]
+    [Authorize(Roles = "Admin,Librarian")]
     [ProducesResponseType(typeof(List<UserDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Get(CancellationToken cancellationToken)

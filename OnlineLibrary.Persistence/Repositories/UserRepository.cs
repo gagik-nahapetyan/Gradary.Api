@@ -3,10 +3,11 @@ using OnlineLibrary.Domain.Entities;
 
 namespace OnlineLibrary.Persistence.Repositories;
 
-public class UserRepository : Repository<User>, IUserRepository
+public class UserRepository(OnlineLibraryDbContext dbContext) : Repository<User>(dbContext), IUserRepository
 {
-    public UserRepository(OnlineLibraryDbContext dbContext) : base(dbContext)
+    public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
+        var results = await FindAsync(u => u.Email == email, cancellationToken);
+        return results.FirstOrDefault();
     }
 }
-

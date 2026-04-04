@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OnlineLibrary.Api.Dtos.Author;
 using OnlineLibrary.Application.Abstractions.Services;
@@ -6,6 +7,7 @@ namespace OnlineLibrary.Api.Controllers;
 
 [Route("api/authors")]
 [ApiController]
+[Authorize]
 [Produces("application/json")]
 public class AuthorController(IAuthorService authorService) : ControllerBase
 {
@@ -16,6 +18,7 @@ public class AuthorController(IAuthorService authorService) : ControllerBase
     /// <response code="400">If the request body is invalid.</response>
     /// <response code="500">If an unexpected error occurred.</response>
     [HttpPost]
+    [Authorize(Roles = "Admin,Librarian")]
     [ProducesResponseType(typeof(AuthorDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -36,6 +39,7 @@ public class AuthorController(IAuthorService authorService) : ControllerBase
     /// <response code="404">If the author was not found.</response>
     /// <response code="500">If an unexpected error occurred.</response>
     [HttpPut("{id:int:min(1)}")]
+    [Authorize(Roles = "Admin,Librarian")]
     [ProducesResponseType(typeof(AuthorDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -55,6 +59,7 @@ public class AuthorController(IAuthorService authorService) : ControllerBase
     /// <response code="404">If the author was not found.</response>
     /// <response code="500">If an unexpected error occurred.</response>
     [HttpGet("{id:int:min(1)}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(AuthorDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -71,6 +76,7 @@ public class AuthorController(IAuthorService authorService) : ControllerBase
     /// <response code="200">Returns the list of authors.</response>
     /// <response code="500">If an unexpected error occurred.</response>
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(List<AuthorDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Get(CancellationToken cancellationToken)

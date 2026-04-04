@@ -1,3 +1,4 @@
+using OnlineLibrary.Api.Dtos.Auth;
 using OnlineLibrary.Api.Dtos.Author;
 using OnlineLibrary.Api.Dtos.Book;
 using OnlineLibrary.Api.Dtos.Category;
@@ -177,6 +178,22 @@ public static class CustomMapper
             BookId = dto.BookId,
             Rating = dto.Rating,
             Comment = dto.Comment
+        };
+    }
+
+    /// <summary>
+    /// Maps <see cref="AuthResult"/> to <see cref="LoginResponse"/>.
+    /// </summary>
+    /// <param name="result">The auth result to map from.</param>
+    /// <param name="expiresAt">The UTC expiry time of the access token.</param>
+    /// <returns>The login response.</returns>
+    public static LoginResponse ToResponse(this AuthResult result, DateTime expiresAt)
+    {
+        return new LoginResponse
+        {
+            AccessToken = result.AccessToken,
+            ExpiresAt = expiresAt,
+            User = result.User.ToDto()
         };
     }
 

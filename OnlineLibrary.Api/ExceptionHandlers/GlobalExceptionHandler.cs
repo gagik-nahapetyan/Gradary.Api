@@ -66,6 +66,10 @@ internal sealed class GlobalExceptionHandler : IExceptionHandler
                 StatusCodes.Status400BadRequest,
                 "Bad Request",
                 ex.Message),
+            UnauthorizedAccessException ex => (
+                StatusCodes.Status401Unauthorized,
+                "Unauthorized",
+                ex.Message),
             _ => (
                 StatusCodes.Status500InternalServerError,
                 "Internal Server Error",

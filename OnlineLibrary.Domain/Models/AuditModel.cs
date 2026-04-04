@@ -13,7 +13,7 @@ public class AuditModel : ModelBase
     /// <summary>
     /// The id of the user the item of created by.
     /// </summary>
-    public int CreatedBy { get; set; }
+    public int? CreatedBy { get; set; }
 
     /// <summary>
     /// The updated date of the item.
@@ -23,5 +23,5 @@ public class AuditModel : ModelBase
     /// <summary>
     /// The id of the user the item of updated by.
     /// </summary>
-    public int UpdatedBy { get; set; }
+    public int? UpdatedBy { get; set; }
 }

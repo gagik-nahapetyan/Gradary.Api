@@ -1,6 +1,6 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OnlineLibrary;
 using OnlineLibrary.Api.Dtos.User;
 using OnlineLibrary.Application.Abstractions.Services;
 
@@ -44,10 +44,17 @@ public class UserController(IUserService userService) : ControllerBase
     [HttpPut("{id:int:min(1)}")]
     [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Update(int id, [FromBody] UserUpdateRequest input, CancellationToken cancellationToken)
     {
+        var callerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var isAdmin = User.IsInRole("Admin");
+
+        if (!isAdmin && callerId != id)
+            return Forbid();
+
         var model = input.ToModel(id);
         await userService.UpdateAsync(model, cancellationToken);
 
@@ -65,10 +72,15 @@ public class UserController(IUserService userService) : ControllerBase
     [HttpPut("{id:int:min(1)}/password")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UpdatePassword(int id, [FromBody] UpdatePasswordRequest input, CancellationToken cancellationToken)
     {
+        var callerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        if (callerId != id)
+            return Forbid();
+
         await userService.UpdatePasswordAsync(id, input.NewPassword, cancellationToken);
 
         return NoContent();

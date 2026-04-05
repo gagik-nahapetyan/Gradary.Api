@@ -26,5 +26,4 @@ public class UserModel : AuditModel
     /// The role of the user.
     /// </summary>
     public UserRole Role { get; set; }
-
 }

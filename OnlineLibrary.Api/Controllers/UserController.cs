@@ -1,5 +1,6 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OnlineLibrary;
 using OnlineLibrary.Api.Dtos.User;
 using OnlineLibrary.Application.Abstractions.Services;
 
@@ -7,6 +8,7 @@ namespace OnlineLibrary.Api.Controllers;
 
 [Route("api/users")]
 [ApiController]
+[Authorize]
 [Produces("application/json")]
 public class UserController(IUserService userService) : ControllerBase
 {
@@ -15,8 +17,11 @@ public class UserController(IUserService userService) : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <response code="200">Returns the created user.</response>
     /// <response code="400">If the request body is invalid or the password is missing.</response>
+    /// <response code="401">If the request is not authenticated.</response>
+    /// <response code="403">If the user does not have the required role.</response>
     /// <response code="500">If an unexpected error occurred.</response>
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -39,10 +44,17 @@ public class UserController(IUserService userService) : ControllerBase
     [HttpPut("{id:int:min(1)}")]
     [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Update(int id, [FromBody] UserUpdateRequest input, CancellationToken cancellationToken)
     {
+        var callerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var isAdmin = User.IsInRole("Admin");
+
+        if (!isAdmin && callerId != id)
+            return Forbid();
+
         var model = input.ToModel(id);
         await userService.UpdateAsync(model, cancellationToken);
 
@@ -60,10 +72,15 @@ public class UserController(IUserService userService) : ControllerBase
     [HttpPut("{id:int:min(1)}/password")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UpdatePassword(int id, [FromBody] UpdatePasswordRequest input, CancellationToken cancellationToken)
     {
+        var callerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        if (callerId != id)
+            return Forbid();
+
         await userService.UpdatePasswordAsync(id, input.NewPassword, cancellationToken);
 
         return NoContent();
@@ -90,8 +107,11 @@ public class UserController(IUserService userService) : ControllerBase
     /// <summary>Gets all users.</summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <response code="200">Returns the list of users.</response>
+    /// <response code="401">If the request is not authenticated.</response>
+    /// <response code="403">If the user does not have the required role.</response>
     /// <response code="500">If an unexpected error occurred.</response>
     [HttpGet]
+    [Authorize(Roles = "Admin,Librarian")]
     [ProducesResponseType(typeof(List<UserDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Get(CancellationToken cancellationToken)

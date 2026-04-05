@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OnlineLibrary.Api.Dtos.Review;
 using OnlineLibrary.Application.Abstractions.Services;
@@ -6,6 +7,7 @@ namespace OnlineLibrary.Api.Controllers;
 
 [Route("api/reviews")]
 [ApiController]
+[Authorize]
 [Produces("application/json")]
 public class ReviewController(IReviewService reviewService) : ControllerBase
 {
@@ -55,6 +57,7 @@ public class ReviewController(IReviewService reviewService) : ControllerBase
     /// <response code="404">If the review was not found.</response>
     /// <response code="500">If an unexpected error occurred.</response>
     [HttpGet("{id:int:min(1)}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(ReviewDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -72,6 +75,7 @@ public class ReviewController(IReviewService reviewService) : ControllerBase
     /// <response code="200">Returns the list of reviews for the book.</response>
     /// <response code="500">If an unexpected error occurred.</response>
     [HttpGet("book/{bookId:int:min(1)}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(List<ReviewDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetByBookId(int bookId, CancellationToken cancellationToken)

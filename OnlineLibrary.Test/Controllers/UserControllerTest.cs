@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using OnlineLibrary.Api.Controllers;
@@ -17,6 +19,24 @@ public class UserControllerTests
     {
         _mockUserService = new Mock<IUserService>();
         _controller = new UserController(_mockUserService.Object);
+    }
+
+    private static ClaimsPrincipal CreateUser(int id, string role = "Member")
+    {
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, id.ToString()),
+            new Claim(ClaimTypes.Role, role)
+        };
+        return new ClaimsPrincipal(new ClaimsIdentity(claims, "Test"));
+    }
+
+    private void SetCaller(int id, string role = "Member")
+    {
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = CreateUser(id, role) }
+        };
     }
 
     [Fact]
@@ -67,9 +87,11 @@ public class UserControllerTests
 
     [Theory]
     [InlineData(1)]
-    public async Task UpdateUser_ShouldUpdateUser_WhenInputIsValid(int id)
+    public async Task UpdateUser_ShouldUpdateUser_WhenCallerIsOwner(int id)
     {
         // arrange
+        SetCaller(id);
+
         var input = new UserUpdateRequest
         {
             FullName = "David Goggins",
@@ -102,11 +124,60 @@ public class UserControllerTests
         _mockUserService.Verify(s => s.UpdateAsync(It.IsAny<UserModel>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    [Fact]
+    public async Task UpdateUser_ShouldUpdateUser_WhenCallerIsAdmin()
+    {
+        // arrange
+        const int targetId = 1;
+        SetCaller(id: 99, role: "Admin");
+
+        var input = new UserUpdateRequest
+        {
+            FullName = "David Goggins",
+            Email = "david@goggins.com",
+            Role = UserRole.Member
+        };
+
+        _mockUserService
+            .Setup(s => s.UpdateAsync(It.IsAny<UserModel>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        // act
+        var result = await _controller.Update(targetId, input, CancellationToken.None);
+
+        // assert
+        Assert.IsType<OkObjectResult>(result);
+        _mockUserService.Verify(s => s.UpdateAsync(It.IsAny<UserModel>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateUser_ShouldReturnForbid_WhenCallerIsNotOwnerAndNotAdmin()
+    {
+        // arrange
+        SetCaller(id: 2, role: "Member");
+
+        var input = new UserUpdateRequest
+        {
+            FullName = "David Goggins",
+            Email = "david@goggins.com",
+            Role = UserRole.Member
+        };
+
+        // act
+        var result = await _controller.Update(1, input, CancellationToken.None);
+
+        // assert
+        Assert.IsType<ForbidResult>(result);
+        _mockUserService.Verify(s => s.UpdateAsync(It.IsAny<UserModel>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
     [Theory]
     [InlineData(999)]
     public async Task UpdateUser_ShouldThrowKeyNotFoundException_WhenUserDoesNotExist(int id)
     {
         // arrange
+        SetCaller(id);
+
         var input = new UserUpdateRequest
         {
             FullName = "David Goggins",
@@ -128,9 +199,11 @@ public class UserControllerTests
 
     [Theory]
     [InlineData(1)]
-    public async Task UpdatePassword_ShouldReturnNoContent_WhenUserExists(int id)
+    public async Task UpdatePassword_ShouldReturnNoContent_WhenCallerIsOwner(int id)
     {
         // arrange
+        SetCaller(id);
+
         var input = new UpdatePasswordRequest { NewPassword = "NewStrongPass456!" };
 
         _mockUserService
@@ -146,11 +219,29 @@ public class UserControllerTests
         _mockUserService.Verify(s => s.UpdatePasswordAsync(id, input.NewPassword, It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    [Fact]
+    public async Task UpdatePassword_ShouldReturnForbid_WhenCallerIsNotOwner()
+    {
+        // arrange
+        SetCaller(id: 2);
+
+        var input = new UpdatePasswordRequest { NewPassword = "NewStrongPass456!" };
+
+        // act
+        var result = await _controller.UpdatePassword(1, input, CancellationToken.None);
+
+        // assert
+        Assert.IsType<ForbidResult>(result);
+        _mockUserService.Verify(s => s.UpdatePasswordAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
     [Theory]
     [InlineData(999)]
     public async Task UpdatePassword_ShouldThrowKeyNotFoundException_WhenUserDoesNotExist(int id)
     {
         // arrange
+        SetCaller(id);
+
         var input = new UpdatePasswordRequest { NewPassword = "NewStrongPass456!" };
 
         var expectedMessage = $"User with id {id} not found";

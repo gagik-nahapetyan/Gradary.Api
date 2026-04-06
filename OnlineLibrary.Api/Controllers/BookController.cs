@@ -115,7 +115,27 @@ public class BookController(IBookService bookService, IOptions<FileUploadSetting
     public async Task<IActionResult> Get(CancellationToken cancellationToken)
     {
         var books = await bookService.GetAsync(cancellationToken);
+        var dtos = books.Select(b => b.ToDto());
 
-        return Ok(books.Select(b => b.ToDto()));
+        return Ok(dtos);
+    }
+
+    /// <summary>Gets all books in a category.</summary>
+    /// <param name="categoryId">The id of the category.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">Returns the list of books.</response>
+    /// <response code="404">If the category was not found.</response>
+    /// <response code="500">If an unexpected error occurred.</response>
+    [HttpGet("category/{categoryId:int:min(1)}")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(List<BookDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetByCategoryId(int categoryId, CancellationToken cancellationToken)
+    {
+        var books = await bookService.GetByCategoryIdAsync(categoryId, cancellationToken);
+        var dtos = books.Select(b => b.ToDto());
+
+        return Ok(dtos);
     }
 }

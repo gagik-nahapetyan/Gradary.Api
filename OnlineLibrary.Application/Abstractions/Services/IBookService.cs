@@ -40,6 +40,14 @@ public interface IBookService
     Task<List<BookModel>> GetAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves all books belonging to the given category.
+    /// </summary>
+    /// <param name="categoryId">The id of the category.</param>
+    /// <param name="cancellationToken">The token to cancel the operation.</param>
+    /// <returns>Task representing an asynchronous operation, wrapping the list of book models.</returns>
+    Task<List<BookModel>> GetByCategoryIdAsync(int categoryId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Uploads the file for a book.
     /// </summary>
     /// <param name="id">The id of the book.</param>

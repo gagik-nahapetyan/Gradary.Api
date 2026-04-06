@@ -7,7 +7,7 @@ namespace OnlineLibrary.Application.Services;
 /// <summary>
 /// Represents a <see cref="BookService"/>.
 /// </summary>
-public class BookService(IBookRepository bookRepository) : IBookService
+public class BookService(IBookRepository bookRepository, ICategoryRepository categoryRepository) : IBookService
 {
     public async Task<BookModel> CreateAsync(BookModel bookModel, CancellationToken cancellationToken = default)
     {
@@ -67,6 +67,16 @@ public class BookService(IBookRepository bookRepository) : IBookService
     public async Task<List<BookModel>> GetAsync(CancellationToken cancellationToken = default)
     {
         var books = await bookRepository.GetAllAsync(cancellationToken);
+        return [.. books.Select(b => b.ToModel())];
+    }
+
+    public async Task<List<BookModel>> GetByCategoryIdAsync(int categoryId, CancellationToken cancellationToken = default)
+    {
+        var categoryExists = await categoryRepository.ExistAsync(c => c.Id == categoryId, cancellationToken);
+        if (!categoryExists)
+            throw new KeyNotFoundException($"Category with id {categoryId} not found");
+
+        var books = await bookRepository.FindAsync(b => b.CategoryId == categoryId, cancellationToken);
         return [.. books.Select(b => b.ToModel())];
     }
 }

@@ -336,4 +336,75 @@ public class BookControllerTests
 
         _mockBookService.Verify(s => s.GetAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    [Theory]
+    [InlineData(3)]
+    public async Task GetBooksByCategoryId_ShouldReturnBooks_WhenCategoryExists(int categoryId)
+    {
+        // arrange
+        var books = new List<BookModel>
+        {
+            new() { Id = 1, Title = "Never Finished", AuthorId = 1, CategoryId = categoryId },
+            new() { Id = 2, Title = "Can't Hurt Me", AuthorId = 1, CategoryId = categoryId }
+        };
+
+        _mockBookService
+            .Setup(s => s.GetByCategoryIdAsync(categoryId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(books);
+
+
+        // act
+        var result = await _controller.GetByCategoryId(categoryId, CancellationToken.None);
+
+
+        // assert
+        var okResponse = Assert.IsType<OkObjectResult>(result);
+        var dtos = Assert.IsAssignableFrom<IEnumerable<BookDto>>(okResponse.Value).ToList();
+
+        Assert.Equal(books.Count, dtos.Count);
+        Assert.All(dtos, dto => Assert.Equal(categoryId, dto.CategoryId));
+
+        _mockBookService.Verify(s => s.GetByCategoryIdAsync(categoryId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(3)]
+    public async Task GetBooksByCategoryId_ShouldReturnEmptyList_WhenCategoryHasNoBooks(int categoryId)
+    {
+        // arrange
+        _mockBookService
+            .Setup(s => s.GetByCategoryIdAsync(categoryId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
+
+
+        // act
+        var result = await _controller.GetByCategoryId(categoryId, CancellationToken.None);
+
+
+        // assert
+        var okResponse = Assert.IsType<OkObjectResult>(result);
+        var dtos = Assert.IsAssignableFrom<IEnumerable<BookDto>>(okResponse.Value);
+
+        Assert.Empty(dtos);
+
+        _mockBookService.Verify(s => s.GetByCategoryIdAsync(categoryId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(999)]
+    public async Task GetBooksByCategoryId_ShouldThrowKeyNotFoundException_WhenCategoryDoesNotExist(int categoryId)
+    {
+        // arrange
+        var expectedMessage = $"Category with id {categoryId} not found";
+        _mockBookService
+            .Setup(s => s.GetByCategoryIdAsync(categoryId, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new KeyNotFoundException(expectedMessage));
+
+
+        // act & assert — global exception middleware maps this to 404 ProblemDetails when the API runs end-to-end
+        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.GetByCategoryId(categoryId, CancellationToken.None));
+        Assert.Equal(expectedMessage, ex.Message);
+
+        _mockBookService.Verify(s => s.GetByCategoryIdAsync(categoryId, It.IsAny<CancellationToken>()), Times.Once);
+    }
 }

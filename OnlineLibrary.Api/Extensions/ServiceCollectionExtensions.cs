@@ -13,6 +13,7 @@ public static class ServiceCollectionExtensions
     {
         services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
         services.Configure<FileUploadSettings>(configuration.GetSection("FileUpload"));
+        services.Configure<BookCollectionSettings>(configuration.GetSection("BookCollection"));
 
         return services;
     }

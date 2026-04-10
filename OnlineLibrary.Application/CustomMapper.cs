@@ -128,4 +128,53 @@ public static class CustomMapper
             Comment = entity.Comment
         };
     }
+
+    public static BookCollection ToEntity(this BookCollectionModel model)
+    {
+        return new BookCollection
+        {
+            Id = model.Id,
+            UserId = model.UserId,
+            Name = model.Name,
+            Description = model.Description,
+            Status = model.Status
+        };
+    }
+
+    public static BookCollectionModel ToModel(this BookCollection entity)
+    {
+        return new BookCollectionModel
+        {
+            Id = entity.Id,
+            UserId = entity.UserId,
+            Name = entity.Name,
+            Description = entity.Description,
+            Status = entity.Status,
+            Items = entity.Items.Select(i => i.ToModel()).ToList()
+        };
+    }
+
+    public static BookCollectionItem ToEntity(this BookCollectionItemModel model)
+    {
+        return new BookCollectionItem
+        {
+            Id = model.Id,
+            BookCollectionId = model.BookCollectionId,
+            BookId = model.BookId,
+            Status = model.Status,
+            Order = model.Order
+        };
+    }
+
+    public static BookCollectionItemModel ToModel(this BookCollectionItem entity)
+    {
+        return new BookCollectionItemModel
+        {
+            Id = entity.Id,
+            BookCollectionId = entity.BookCollectionId,
+            BookId = entity.BookId,
+            Status = entity.Status,
+            Order = entity.Order
+        };
+    }
 }

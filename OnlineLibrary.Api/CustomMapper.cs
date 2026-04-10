@@ -1,6 +1,7 @@
 using OnlineLibrary.Api.Dtos.Auth;
 using OnlineLibrary.Api.Dtos.Author;
 using OnlineLibrary.Api.Dtos.Book;
+using OnlineLibrary.Api.Dtos.BookCollection;
 using OnlineLibrary.Api.Dtos.Category;
 using OnlineLibrary.Api.Dtos.Review;
 using OnlineLibrary.Api.Dtos.User;
@@ -211,6 +212,52 @@ public static class CustomMapper
             BookId = model.BookId,
             Rating = model.Rating,
             Comment = model.Comment
+        };
+    }
+
+    public static BookCollectionModel ToModel(this BookCollectionRequest dto, int userId, int id = 0)
+    {
+        return new BookCollectionModel
+        {
+            Id = id,
+            UserId = userId,
+            Name = dto.Name,
+            Description = dto.Description,
+            Status = dto.Status
+        };
+    }
+
+    public static BookCollectionDto ToDto(this BookCollectionModel model)
+    {
+        return new BookCollectionDto
+        {
+            Id = model.Id,
+            UserId = model.UserId,
+            Name = model.Name,
+            Description = model.Description,
+            Status = model.Status,
+            Items = model.Items.Select(i => i.ToDto()).ToList()
+        };
+    }
+
+    public static BookCollectionItemModel ToModel(this BookCollectionItemRequest dto)
+    {
+        return new BookCollectionItemModel
+        {
+            BookId = dto.BookId,
+            Status = dto.Status,
+            Order = dto.Order
+        };
+    }
+
+    public static BookCollectionItemDto ToDto(this BookCollectionItemModel model)
+    {
+        return new BookCollectionItemDto
+        {
+            Id = model.Id,
+            BookId = model.BookId,
+            Status = model.Status,
+            Order = model.Order
         };
     }
 }

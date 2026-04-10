@@ -34,6 +34,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<IAuthorRepository, AuthorRepository>();
         services.AddScoped<IReviewRepository, ReviewRepository>();
+        services.AddScoped<IBookCollectionRepository, BookCollectionRepository>();
+        services.AddScoped<IBookCollectionItemRepository, BookCollectionItemRepository>();
 
         return services;
     }

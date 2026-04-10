@@ -55,6 +55,14 @@ public interface IRepository<TEntity>
     Task<bool> ExistAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Returns the count of entities satisfying the provided condition.
+    /// </summary>
+    /// <param name="predicate">The predicate supplied.</param>
+    /// <param name="cancellationToken">The token to cancel the operation.</param>
+    /// <returns>The task representing the asynchronous operation wrapped the count.</returns>
+    Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Removes the record from the database.
     /// </summary>
     /// <param name="entity">The entity to remove the record for.</param>

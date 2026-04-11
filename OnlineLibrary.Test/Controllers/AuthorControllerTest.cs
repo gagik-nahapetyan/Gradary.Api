@@ -194,4 +194,39 @@ public class AuthorControllerTests
 
         _mockAuthorService.Verify(s => s.GetAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    [Theory]
+    [InlineData(123)]
+    public async Task DeleteAuthor_ShouldReturnNoContent_WhenAuthorExists(int id)
+    {
+        // arrange
+        _mockAuthorService
+            .Setup(s => s.DeleteAsync(id, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        // act
+        var result = await _controller.Delete(id, CancellationToken.None);
+
+        // assert
+        Assert.IsType<NoContentResult>(result);
+
+        _mockAuthorService.Verify(s => s.DeleteAsync(id, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(999)]
+    public async Task DeleteAuthor_ShouldThrowKeyNotFoundException_WhenAuthorDoesNotExist(int id)
+    {
+        // arrange
+        var expectedMessage = $"Author with id {id} not found";
+        _mockAuthorService
+            .Setup(s => s.DeleteAsync(id, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new KeyNotFoundException(expectedMessage));
+
+        // act & assert — global exception middleware maps this to 404 ProblemDetails when the API runs end-to-end
+        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.Delete(id, CancellationToken.None));
+        Assert.Equal(expectedMessage, ex.Message);
+
+        _mockAuthorService.Verify(s => s.DeleteAsync(id, It.IsAny<CancellationToken>()), Times.Once);
+    }
 }

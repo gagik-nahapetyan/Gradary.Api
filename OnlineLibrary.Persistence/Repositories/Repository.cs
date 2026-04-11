@@ -69,4 +69,9 @@ public class Repository<TEntity> : IRepository<TEntity>
     {
         return await DbSet.AnyAsync(predicate, cancellationToken);
     }
+
+    public async Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        return await DbSet.CountAsync(predicate, cancellationToken);
+    }
 }

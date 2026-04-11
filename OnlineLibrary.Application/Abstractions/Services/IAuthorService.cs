@@ -35,5 +35,11 @@ public interface IAuthorService
     /// <param name="model">The author model provided.</param>
     /// <param name="cancellationToken">The token to cancel the operation.</param>
     Task UpdateAsync(AuthorModel model, CancellationToken cancellationToken = default);
-}
 
+    /// <summary>
+    /// Soft-deletes an author by id.
+    /// </summary>
+    /// <param name="id">The id of the author.</param>
+    /// <param name="cancellationToken">The token to cancel the operation.</param>
+    Task DeleteAsync(int id, CancellationToken cancellationToken = default);
+}

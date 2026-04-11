@@ -49,4 +49,14 @@ public class AuthorService(IAuthorRepository authorRepository) : IAuthorService
 
         return authorModel;
     }
+
+    public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var author = await authorRepository.GetByIdAsync(id, cancellationToken);
+        if (author is null)
+            throw new KeyNotFoundException($"Author with id {id} not found");
+
+        authorRepository.Delete(author);
+        await authorRepository.SaveChangesAsync(cancellationToken);
+    }
 }

@@ -35,5 +35,11 @@ public interface ICategoryService
     /// <param name="model">The category model provided.</param>
     /// <param name="cancellationToken">The token to cancel the operation.</param>
     Task UpdateAsync(CategoryModel model, CancellationToken cancellationToken = default);
-}
 
+    /// <summary>
+    /// Soft-deletes a category by id.
+    /// </summary>
+    /// <param name="id">The id of the category.</param>
+    /// <param name="cancellationToken">The token to cancel the operation.</param>
+    Task DeleteAsync(int id, CancellationToken cancellationToken = default);
+}

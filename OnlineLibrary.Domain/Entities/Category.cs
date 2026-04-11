@@ -3,7 +3,7 @@ namespace OnlineLibrary.Domain.Entities;
 /// <summary>
 /// Represents the <see cref="Category"/> entity.
 /// </summary>
-public class Category : EntityBase
+public class Category : AuditEntity
 {
     /// <summary>
     /// The name of the category.

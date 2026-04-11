@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
+using OnlineLibrary.Domain.Entities;
 
 namespace OnlineLibrary.Application.Abstractions.Repositories;
 
@@ -7,7 +8,7 @@ namespace OnlineLibrary.Application.Abstractions.Repositories;
 /// </summary>
 /// <typeparam name="TEntity"></typeparam>
 public interface IRepository<TEntity>
-    where TEntity : class
+    where TEntity : EntityBase
 {
     /// <summary>
     /// Inserts the entity supplied into the database.
@@ -28,39 +29,44 @@ public interface IRepository<TEntity>
     /// </summary>
     /// <param name="id">The id supplied.</param>
     /// <param name="cancellationToken">The token to cancel the operation.</param>
+    /// <param name="includeDeleted">When true, soft-deleted entities are included.</param>
     /// <returns>The task representing the asynchronous operation wrapped the entity.</returns>
-    Task<TEntity?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
+    Task<TEntity?> GetByIdAsync(int id, CancellationToken cancellationToken = default, bool includeDeleted = false);
 
     /// <summary>
     /// Retrieves the list of all entities.
     /// </summary>
     /// <param name="cancellationToken">The token to cancel the operation.</param>
+    /// <param name="includeDeleted">When true, soft-deleted entities are included.</param>
     /// <returns>The task representing the asynchronous operation wrapped the list of entities.</returns>
-    Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default, bool includeDeleted = false);
 
     /// <summary>
     /// Filters the entities by the condition supplied.
     /// </summary>
     /// <param name="predicate">The predicate supplied.</param>
     /// <param name="cancellationToken">The token to cancel the operation.</param>
+    /// <param name="includeDeleted">When true, soft-deleted entities are included.</param>
     /// <returns>The task representing the asynchronous operation wrapped the list of filtered entities.</returns>
-    Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default, bool includeDeleted = false);
 
     /// <summary>
     /// Determines if any entity satisfying the provided condition exists.
     /// </summary>
     /// <param name="predicate">The predicate supplied.</param>
     /// <param name="cancellationToken">The token to cancel the operation.</param>
+    /// <param name="includeDeleted">When true, soft-deleted entities are included.</param>
     /// <returns>The task representing the asynchronous operation wrapped the boolean flag.</returns>
-    Task<bool> ExistAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<bool> ExistAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default, bool includeDeleted = false);
 
     /// <summary>
     /// Returns the count of entities satisfying the provided condition.
     /// </summary>
     /// <param name="predicate">The predicate supplied.</param>
     /// <param name="cancellationToken">The token to cancel the operation.</param>
+    /// <param name="includeDeleted">When true, soft-deleted entities are included.</param>
     /// <returns>The task representing the asynchronous operation wrapped the count.</returns>
-    Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default, bool includeDeleted = false);
 
     /// <summary>
     /// Removes the record from the database.

@@ -54,6 +54,16 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
         return categoryModel;
     }
 
+    public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var category = await categoryRepository.GetByIdAsync(id, cancellationToken);
+        if (category is null)
+            throw new KeyNotFoundException($"Category with id {id} not found");
+
+        categoryRepository.Delete(category);
+        await categoryRepository.SaveChangesAsync(cancellationToken);
+    }
+
     private async Task ValidateParentAsync(CategoryModel categoryModel, CancellationToken cancellationToken = default)
     {
         if (!categoryModel.ParentId.HasValue)

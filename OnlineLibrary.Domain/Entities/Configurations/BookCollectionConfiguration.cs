@@ -34,7 +34,8 @@ public class BookCollectionConfiguration : AuditEntityConfiguration<BookCollecti
 
         modelBuilder
             .HasIndex(c => new { c.UserId, c.Name })
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
 
         #endregion
     }

@@ -86,4 +86,22 @@ public class AuthorController(IAuthorService authorService) : ControllerBase
 
         return Ok(dtos);
     }
+
+    /// <summary>Soft-deletes an author by id.</summary>
+    /// <param name="id">The id of the author to delete.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="204">Author deleted successfully.</response>
+    /// <response code="404">If the author was not found.</response>
+    /// <response code="500">If an unexpected error occurred.</response>
+    [HttpDelete("{id:int:min(1)}")]
+    [Authorize(Roles = "Admin,Librarian")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    {
+        await authorService.DeleteAsync(id, cancellationToken);
+
+        return NoContent();
+    }
 }

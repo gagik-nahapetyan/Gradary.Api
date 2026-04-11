@@ -138,4 +138,22 @@ public class BookController(IBookService bookService, IOptions<FileUploadSetting
 
         return Ok(dtos);
     }
+
+    /// <summary>Soft-deletes a book by id.</summary>
+    /// <param name="id">The id of the book to delete.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="204">Book deleted successfully.</response>
+    /// <response code="404">If the book was not found.</response>
+    /// <response code="500">If an unexpected error occurred.</response>
+    [HttpDelete("{id:int:min(1)}")]
+    [Authorize(Roles = "Admin,Librarian")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    {
+        await bookService.DeleteAsync(id, cancellationToken);
+
+        return NoContent();
+    }
 }

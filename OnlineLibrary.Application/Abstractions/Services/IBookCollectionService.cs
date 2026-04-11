@@ -19,6 +19,9 @@ public interface IBookCollectionService
     /// <summary>Gets all collections for the caller.</summary>
     Task<List<BookCollectionModel>> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default);
 
+    /// <summary>Soft-deletes a collection. Only the owner may delete their collection.</summary>
+    Task DeleteAsync(int id, int callerId, CancellationToken cancellationToken = default);
+
     /// <summary>Adds a book to a collection.</summary>
     Task<BookCollectionItemModel> AddBookAsync(int collectionId, BookCollectionItemModel model, int callerId, CancellationToken cancellationToken = default);
 

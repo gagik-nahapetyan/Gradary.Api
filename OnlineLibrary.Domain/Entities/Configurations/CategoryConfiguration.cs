@@ -6,10 +6,12 @@ namespace OnlineLibrary.Domain.Entities.Configurations;
 /// <summary>
 /// Represents a configuration class for <see cref="Category"/> entity.
 /// </summary>
-public class CategoryConfiguration : IEntityTypeConfiguration<Category>
+public class CategoryConfiguration : AuditEntityConfiguration<Category>
 {
-    public void Configure(EntityTypeBuilder<Category> modelBuilder)
+    public override void Configure(EntityTypeBuilder<Category> modelBuilder)
     {
+        base.Configure(modelBuilder);
+
         modelBuilder
             .Property(c => c.Name)
             .HasColumnType("nvarchar(100)");

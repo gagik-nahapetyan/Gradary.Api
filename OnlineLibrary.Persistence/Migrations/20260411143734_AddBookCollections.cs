@@ -46,7 +46,7 @@ namespace OnlineLibrary.Persistence.Migrations
                     BookCollectionId = table.Column<int>(type: "int", nullable: false),
                     BookId = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
-                    Order = table.Column<int>(type: "int", nullable: false)
+                    Position = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -78,9 +78,9 @@ namespace OnlineLibrary.Persistence.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_BookCollectionItem_BookCollectionId_Order",
+                name: "IX_BookCollectionItem_BookCollectionId_Position",
                 table: "BookCollectionItem",
-                columns: new[] { "BookCollectionId", "Order" });
+                columns: new[] { "BookCollectionId", "Position" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_BookCollectionItem_BookId",

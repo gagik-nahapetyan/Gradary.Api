@@ -11,5 +11,5 @@ public class BookCollectionItemModel
     public int BookCollectionId { get; set; }
     public int BookId { get; set; }
     public BookCollectionItemStatus Status { get; set; }
-    public int Order { get; set; }
+    public int Position { get; set; }
 }

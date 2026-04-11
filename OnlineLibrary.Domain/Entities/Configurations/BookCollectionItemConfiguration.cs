@@ -33,7 +33,7 @@ public class BookCollectionItemConfiguration : IEntityTypeConfiguration<BookColl
             .IsUnique();
 
         modelBuilder
-            .HasIndex(i => new { i.BookCollectionId, i.Order });
+            .HasIndex(i => new { i.BookCollectionId, i.Position });
 
         #endregion
     }

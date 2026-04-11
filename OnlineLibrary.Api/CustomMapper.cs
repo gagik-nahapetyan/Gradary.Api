@@ -246,7 +246,7 @@ public static class CustomMapper
         {
             BookId = dto.BookId,
             Status = dto.Status,
-            Order = dto.Order
+            Position = dto.Position
         };
     }
 
@@ -257,7 +257,7 @@ public static class CustomMapper
             Id = model.Id,
             BookId = model.BookId,
             Status = model.Status,
-            Order = model.Order
+            Position = model.Position
         };
     }
 }

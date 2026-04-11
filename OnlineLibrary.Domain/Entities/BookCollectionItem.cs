@@ -23,9 +23,10 @@ public class BookCollectionItem : EntityBase
     public BookCollectionItemStatus Status { get; set; }
 
     /// <summary>
-    /// The display order of this book within the collection.
+    /// The display position of this book within the collection.
     /// </summary>
-    public int Order { get; set; }
+    public int Position { get; set; }
+
 
     /// <summary>
     /// The parent collection.

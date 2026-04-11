@@ -73,7 +73,7 @@ public class BookCollectionService(
         validator.ValidateUpdateBook(collection, item, model, callerId);
 
         item!.Status = model.Status;
-        item.Order = model.Order;
+        item.Position = model.Position;
 
         bookCollectionItemRepository.Update(item);
         await bookCollectionItemRepository.SaveChangesAsync(cancellationToken);

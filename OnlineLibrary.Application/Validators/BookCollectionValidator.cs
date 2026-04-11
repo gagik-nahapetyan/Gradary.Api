@@ -47,6 +47,7 @@ public class BookCollectionValidator(
         await ValidateBookExistsAsync(model.BookId, cancellationToken);
         await ValidateBookNotDuplicateAsync(collection!.Id, model.BookId, cancellationToken);
         ValidateActiveItemLimit(collection.Items, model.Status);
+        ValidateItemPositionNotTaken(collection.Items, model.Position);
     }
 
     public void ValidateUpdateBook(BookCollection? collection, BookCollectionItem? item, BookCollectionItemModel model, int callerId)
@@ -57,6 +58,9 @@ public class BookCollectionValidator(
 
         if (IsActiveItem(model.Status) && !IsActiveItem(item!.Status))
             ValidateActiveItemLimit(collection!.Items, model.Status, excludeBookId: model.BookId);
+
+        if (item!.Position != model.Position)
+            ValidateItemPositionNotTaken(collection!.Items, model.Position, excludeBookId: model.BookId);
     }
 
     public static void ValidateRemoveBook(BookCollection? collection, BookCollectionItem? item, int bookId, int callerId)
@@ -84,6 +88,12 @@ public class BookCollectionValidator(
             throw new KeyNotFoundException($"Book with id {bookId} not found in this collection.");
     }
 
+    private static void ValidateItemPositionNotTaken(ICollection<BookCollectionItem> items, int position, int excludeBookId = 0)
+    {
+        if (items.Any(i => i.BookId != excludeBookId && i.Position == position))
+            throw new InvalidOperationException($"Position {position} is already occupied in this collection.");
+    }
+
     private void ValidateActiveItemLimit(ICollection<BookCollectionItem> items, BookCollectionItemStatus newStatus, int excludeBookId = 0)
     {
         if (!IsActiveItem(newStatus))
@@ -106,7 +116,9 @@ public class BookCollectionValidator(
     private async Task ValidateActiveCollectionLimitAsync(int userId, CancellationToken cancellationToken)
     {
         var activeCount = await bookCollectionRepository.CountAsync(
-            c => c.UserId == userId && IsActiveCollection(c.Status), cancellationToken);
+            c => c.UserId == userId &&
+                 (c.Status == BookCollectionStatus.NotStarted || c.Status == BookCollectionStatus.InProgress),
+            cancellationToken);
 
         if (activeCount >= _settings.MaxActiveCollections)
             throw new InvalidOperationException($"Cannot have more than {_settings.MaxActiveCollections} active collections.");
@@ -127,9 +139,13 @@ public class BookCollectionValidator(
             throw new ArgumentException($"Book with id {bookId} is already in this collection.");
     }
 
-    private static bool IsActiveCollection(BookCollectionStatus status) =>
-        status is BookCollectionStatus.NotStarted or BookCollectionStatus.InProgress;
+    private static bool IsActiveCollection(BookCollectionStatus status)
+    {
+        return status is BookCollectionStatus.NotStarted or BookCollectionStatus.InProgress;
+    }
 
-    private static bool IsActiveItem(BookCollectionItemStatus status) =>
-        status is BookCollectionItemStatus.WantToRead or BookCollectionItemStatus.Reading;
+    private static bool IsActiveItem(BookCollectionItemStatus status)
+    {
+        return status is BookCollectionItemStatus.WantToRead or BookCollectionItemStatus.Reading;
+    }
 }

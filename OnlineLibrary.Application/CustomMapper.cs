@@ -162,7 +162,7 @@ public static class CustomMapper
             BookCollectionId = model.BookCollectionId,
             BookId = model.BookId,
             Status = model.Status,
-            Order = model.Order
+            Position = model.Position
         };
     }
 
@@ -174,7 +174,7 @@ public static class CustomMapper
             BookCollectionId = entity.BookCollectionId,
             BookId = entity.BookId,
             Status = entity.Status,
-            Order = entity.Order
+            Position = entity.Position
         };
     }
 }

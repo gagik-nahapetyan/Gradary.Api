@@ -158,7 +158,7 @@ namespace OnlineLibrary.Persistence.Migrations
                     b.Property<int>("BookId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Order")
+                    b.Property<int>("Position")
                         .HasColumnType("int");
 
                     b.Property<int>("Status")
@@ -171,7 +171,7 @@ namespace OnlineLibrary.Persistence.Migrations
                     b.HasIndex("BookCollectionId", "BookId")
                         .IsUnique();
 
-                    b.HasIndex("BookCollectionId", "Order");
+                    b.HasIndex("BookCollectionId", "Position");
 
                     b.ToTable("BookCollectionItem");
                 });

@@ -12,7 +12,7 @@ using OnlineLibrary.Persistence;
 namespace OnlineLibrary.Persistence.Migrations
 {
     [DbContext(typeof(OnlineLibraryDbContext))]
-    [Migration("20260410204602_AddBookCollections")]
+    [Migration("20260411143734_AddBookCollections")]
     partial class AddBookCollections
     {
         /// <inheritdoc />
@@ -161,7 +161,7 @@ namespace OnlineLibrary.Persistence.Migrations
                     b.Property<int>("BookId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Order")
+                    b.Property<int>("Position")
                         .HasColumnType("int");
 
                     b.Property<int>("Status")
@@ -174,7 +174,7 @@ namespace OnlineLibrary.Persistence.Migrations
                     b.HasIndex("BookCollectionId", "BookId")
                         .IsUnique();
 
-                    b.HasIndex("BookCollectionId", "Order");
+                    b.HasIndex("BookCollectionId", "Position");
 
                     b.ToTable("BookCollectionItem");
                 });

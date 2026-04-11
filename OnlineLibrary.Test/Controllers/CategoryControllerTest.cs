@@ -409,4 +409,39 @@ public class CategoryControllerTest
 
         _categoryServiceMock.Verify(s => s.GetAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    [Theory]
+    [InlineData(123)]
+    public async Task DeleteCategory_ShouldReturnNoContent_WhenCategoryExists(int id)
+    {
+        // arrange
+        _categoryServiceMock
+            .Setup(s => s.DeleteAsync(id, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        // act
+        var result = await _controller.Delete(id, CancellationToken.None);
+
+        // assert
+        Assert.IsType<NoContentResult>(result);
+
+        _categoryServiceMock.Verify(s => s.DeleteAsync(id, It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Theory]
+    [InlineData(999)]
+    public async Task DeleteCategory_ShouldThrowKeyNotFoundException_WhenCategoryDoesNotExist(int id)
+    {
+        // arrange
+        var expectedMessage = $"Category with id {id} not found";
+        _categoryServiceMock
+            .Setup(s => s.DeleteAsync(id, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new KeyNotFoundException(expectedMessage));
+
+        // act & assert — global exception middleware maps this to 404 ProblemDetails when the API runs end-to-end
+        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.Delete(id, CancellationToken.None));
+        Assert.Equal(expectedMessage, ex.Message);
+
+        _categoryServiceMock.Verify(s => s.DeleteAsync(id, It.IsAny<CancellationToken>()), Times.Once());
+    }
 }

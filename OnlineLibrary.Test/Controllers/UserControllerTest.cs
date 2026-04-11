@@ -353,4 +353,78 @@ public class UserControllerTests
 
         _mockUserService.Verify(s => s.GetAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    [Theory]
+    [InlineData(1)]
+    public async Task DeleteUser_ShouldReturnNoContent_WhenCallerIsOwner(int id)
+    {
+        // arrange
+        SetCaller(id);
+
+        _mockUserService
+            .Setup(s => s.DeleteAsync(id, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        // act
+        var result = await _controller.Delete(id, CancellationToken.None);
+
+        // assert
+        Assert.IsType<NoContentResult>(result);
+
+        _mockUserService.Verify(s => s.DeleteAsync(id, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteUser_ShouldReturnNoContent_WhenCallerIsAdmin()
+    {
+        // arrange
+        const int targetId = 1;
+        SetCaller(id: 99, role: "Admin");
+
+        _mockUserService
+            .Setup(s => s.DeleteAsync(targetId, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        // act
+        var result = await _controller.Delete(targetId, CancellationToken.None);
+
+        // assert
+        Assert.IsType<NoContentResult>(result);
+
+        _mockUserService.Verify(s => s.DeleteAsync(targetId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteUser_ShouldReturnForbid_WhenCallerIsNotOwnerAndNotAdmin()
+    {
+        // arrange
+        SetCaller(id: 2, role: "Member");
+
+        // act
+        var result = await _controller.Delete(1, CancellationToken.None);
+
+        // assert
+        Assert.IsType<ForbidResult>(result);
+
+        _mockUserService.Verify(s => s.DeleteAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Theory]
+    [InlineData(999)]
+    public async Task DeleteUser_ShouldThrowKeyNotFoundException_WhenUserDoesNotExist(int id)
+    {
+        // arrange
+        SetCaller(id);
+
+        var expectedMessage = $"User with id {id} not found";
+        _mockUserService
+            .Setup(s => s.DeleteAsync(id, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new KeyNotFoundException(expectedMessage));
+
+        // act & assert — global exception middleware maps this to 404 ProblemDetails when the API runs end-to-end
+        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.Delete(id, CancellationToken.None));
+        Assert.Equal(expectedMessage, ex.Message);
+
+        _mockUserService.Verify(s => s.DeleteAsync(id, It.IsAny<CancellationToken>()), Times.Once);
+    }
 }

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OnlineLibrary.Api.Dtos.Review;
@@ -84,5 +85,25 @@ public class ReviewController(IReviewService reviewService) : ControllerBase
         var dtos = models.Select(m => m.ToDto()).ToList();
 
         return Ok(dtos);
+    }
+
+    /// <summary>Soft-deletes a review by id. Only the owner may delete their review.</summary>
+    /// <param name="id">The id of the review to delete.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="204">Review deleted successfully.</response>
+    /// <response code="403">If the review does not belong to the current user.</response>
+    /// <response code="404">If the review was not found.</response>
+    /// <response code="500">If an unexpected error occurred.</response>
+    [HttpDelete("{id:int:min(1)}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    {
+        var callerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        await reviewService.DeleteAsync(id, callerId, cancellationToken);
+
+        return NoContent();
     }
 }

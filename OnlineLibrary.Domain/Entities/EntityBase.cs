@@ -9,4 +9,9 @@ public abstract class EntityBase
     /// The unique identifier of the entity.
     /// </summary>
     public int Id { get; set; }
+
+    /// <summary>
+    /// Indicates whether the entity has been soft-deleted.
+    /// </summary>
+    public bool IsDeleted { get; set; }
 }

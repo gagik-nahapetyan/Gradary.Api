@@ -86,4 +86,22 @@ public class CategoryController(ICategoryService categoryService) : ControllerBa
 
         return Ok(dtos);
     }
+
+    /// <summary>Soft-deletes a category by id.</summary>
+    /// <param name="id">The id of the category to delete.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="204">Category deleted successfully.</response>
+    /// <response code="404">If the category was not found.</response>
+    /// <response code="500">If an unexpected error occurred.</response>
+    [HttpDelete("{id:int:min(1)}")]
+    [Authorize(Roles = "Admin,Librarian")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    {
+        await categoryService.DeleteAsync(id, cancellationToken);
+
+        return NoContent();
+    }
 }

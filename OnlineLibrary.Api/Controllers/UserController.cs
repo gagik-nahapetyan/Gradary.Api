@@ -121,4 +121,29 @@ public class UserController(IUserService userService) : ControllerBase
 
         return Ok(dtos);
     }
+
+    /// <summary>Soft-deletes a user by id. Admins may delete any user; a user may delete themselves.</summary>
+    /// <param name="id">The id of the user to delete.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="204">User deleted successfully.</response>
+    /// <response code="403">If the caller is not the user and is not an Admin.</response>
+    /// <response code="404">If the user was not found.</response>
+    /// <response code="500">If an unexpected error occurred.</response>
+    [HttpDelete("{id:int:min(1)}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    {
+        var callerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var isAdmin = User.IsInRole("Admin");
+
+        if (!isAdmin && callerId != id)
+            return Forbid();
+
+        await userService.DeleteAsync(id, cancellationToken);
+
+        return NoContent();
+    }
 }

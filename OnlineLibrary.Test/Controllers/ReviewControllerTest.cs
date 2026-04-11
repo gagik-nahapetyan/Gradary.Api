@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using OnlineLibrary.Api.Controllers;
@@ -17,6 +19,18 @@ public class ReviewControllerTests
     {
         _mockReviewService = new Mock<IReviewService>();
         _controller = new ReviewController(_mockReviewService.Object);
+    }
+
+    private void SetCaller(int id)
+    {
+        var claims = new[] { new Claim(ClaimTypes.NameIdentifier, id.ToString()) };
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal(new ClaimsIdentity(claims, "Test"))
+            }
+        };
     }
 
     [Fact]
@@ -340,5 +354,70 @@ public class ReviewControllerTests
         Assert.Empty(dtos);
 
         _mockReviewService.Verify(s => s.GetByBookIdAsync(bookId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(10)]
+    public async Task DeleteReview_ShouldReturnNoContent_WhenCallerIsOwner(int id)
+    {
+        // arrange
+        const int callerId = 1;
+        SetCaller(callerId);
+
+        _mockReviewService
+            .Setup(s => s.DeleteAsync(id, callerId, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+
+        // act
+        var result = await _controller.Delete(id, CancellationToken.None);
+
+
+        // assert
+        Assert.IsType<NoContentResult>(result);
+
+        _mockReviewService.Verify(s => s.DeleteAsync(id, callerId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(999)]
+    public async Task DeleteReview_ShouldThrowKeyNotFoundException_WhenReviewDoesNotExist(int id)
+    {
+        // arrange
+        const int callerId = 1;
+        SetCaller(callerId);
+
+        var expectedMessage = $"Review with id {id} not found";
+        _mockReviewService
+            .Setup(s => s.DeleteAsync(id, callerId, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new KeyNotFoundException(expectedMessage));
+
+
+        // act & assert — global exception middleware maps this to 404 ProblemDetails when the API runs end-to-end
+        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.Delete(id, CancellationToken.None));
+        Assert.Equal(expectedMessage, ex.Message);
+
+        _mockReviewService.Verify(s => s.DeleteAsync(id, callerId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(10)]
+    public async Task DeleteReview_ShouldThrowUnauthorizedAccessException_WhenCallerIsNotOwner(int id)
+    {
+        // arrange
+        const int callerId = 2;
+        SetCaller(callerId);
+
+        var expectedMessage = "You do not own this review.";
+        _mockReviewService
+            .Setup(s => s.DeleteAsync(id, callerId, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new UnauthorizedAccessException(expectedMessage));
+
+
+        // act & assert — global exception middleware maps this to 403 ProblemDetails when the API runs end-to-end
+        var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _controller.Delete(id, CancellationToken.None));
+        Assert.Equal(expectedMessage, ex.Message);
+
+        _mockReviewService.Verify(s => s.DeleteAsync(id, callerId, It.IsAny<CancellationToken>()), Times.Once);
     }
 }

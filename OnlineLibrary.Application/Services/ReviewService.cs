@@ -64,4 +64,17 @@ public class ReviewService(
 
         return reviewModels;
     }
+
+    public async Task DeleteAsync(int id, int callerId, CancellationToken cancellationToken = default)
+    {
+        var review = await reviewRepository.GetByIdAsync(id, cancellationToken);
+        if (review is null)
+            throw new KeyNotFoundException($"Review with id {id} not found");
+
+        if (review.UserId != callerId)
+            throw new UnauthorizedAccessException("You do not own this review.");
+
+        reviewRepository.Delete(review);
+        await reviewRepository.SaveChangesAsync(cancellationToken);
+    }
 }

@@ -45,4 +45,11 @@ public interface IUserService
     /// <param name="cancellationToken">The token to cancel the operation.</param>
     /// <exception cref="KeyNotFoundException">Thrown when no user with the given id exists.</exception>
     Task UpdatePasswordAsync(int id, string newPassword, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Soft-deletes a user by id.
+    /// </summary>
+    /// <param name="id">The id of the user.</param>
+    /// <param name="cancellationToken">The token to cancel the operation.</param>
+    Task DeleteAsync(int id, CancellationToken cancellationToken = default);
 }

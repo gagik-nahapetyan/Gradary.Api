@@ -88,6 +88,25 @@ public class BookCollectionController(IBookCollectionService bookCollectionServi
         return Ok(models.Select(m => m.ToDto()));
     }
 
+    /// <summary>Soft-deletes a collection. Only the owner may delete their collection.</summary>
+    /// <param name="id">The id of the collection to delete.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="204">Collection deleted successfully.</response>
+    /// <response code="403">If the collection does not belong to the current user.</response>
+    /// <response code="404">If the collection was not found.</response>
+    /// <response code="500">If an unexpected error occurred.</response>
+    [HttpDelete("{id:int:min(1)}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    {
+        await bookCollectionService.DeleteAsync(id, CallerId, cancellationToken);
+
+        return NoContent();
+    }
+
     /// <summary>Adds a book to a collection.</summary>
     /// <param name="id">The id of the collection.</param>
     /// <param name="input">The book details.</param>

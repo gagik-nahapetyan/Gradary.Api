@@ -54,4 +54,11 @@ public interface IBookService
     /// <param name="openStream">A delegate that opens the file stream when invoked.</param>
     /// <param name="cancellationToken">The token to cancel the operation.</param>
     Task UploadFileAsync(int id, Func<Stream> openStream, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Soft-deletes a book by id.
+    /// </summary>
+    /// <param name="id">The id of the book.</param>
+    /// <param name="cancellationToken">The token to cancel the operation.</param>
+    Task DeleteAsync(int id, CancellationToken cancellationToken = default);
 }

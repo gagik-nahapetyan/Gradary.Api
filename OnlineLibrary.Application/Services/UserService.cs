@@ -65,4 +65,14 @@ public class UserService(IUserRepository userRepository, IPasswordHasher passwor
 
         return userModel;
     }
+
+    public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var user = await userRepository.GetByIdAsync(id, cancellationToken);
+        if (user is null)
+            throw new KeyNotFoundException($"User with id {id} not found");
+
+        userRepository.Delete(user);
+        await userRepository.SaveChangesAsync(cancellationToken);
+    }
 }

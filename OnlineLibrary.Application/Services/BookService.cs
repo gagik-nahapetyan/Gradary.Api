@@ -79,4 +79,14 @@ public class BookService(IBookRepository bookRepository, ICategoryRepository cat
         var books = await bookRepository.FindAsync(b => b.CategoryId == categoryId, cancellationToken);
         return [.. books.Select(b => b.ToModel())];
     }
+
+    public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var book = await bookRepository.GetByIdAsync(id, cancellationToken);
+        if (book is null)
+            throw new KeyNotFoundException($"Book with id {id} not found");
+
+        bookRepository.Delete(book);
+        await bookRepository.SaveChangesAsync(cancellationToken);
+    }
 }

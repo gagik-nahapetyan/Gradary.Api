@@ -28,7 +28,8 @@ public class UserConfiguration : AuditEntityConfiguration<User>
 
         modelBuilder
             .HasIndex(u => u.Email)
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
 
         #endregion
     }

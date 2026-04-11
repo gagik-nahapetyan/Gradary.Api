@@ -37,4 +37,12 @@ public interface IReviewService
     /// <param name="cancellationToken">The token to cancel the operation.</param>
     /// <returns>Task representing an asynchronous operation, wrapping the review model.</returns>
     Task<ReviewModel> GetByIdAsync(int id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Soft-deletes a review by id. Only the owner may delete their review.
+    /// </summary>
+    /// <param name="id">The id of the review.</param>
+    /// <param name="callerId">The id of the caller.</param>
+    /// <param name="cancellationToken">The token to cancel the operation.</param>
+    Task DeleteAsync(int id, int callerId, CancellationToken cancellationToken = default);
 }

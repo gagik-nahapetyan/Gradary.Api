@@ -5,7 +5,7 @@ namespace OnlineLibrary.Domain.Entities;
 /// <summary>
 /// Represents a book entry inside a <see cref="BookCollection"/>.
 /// </summary>
-public class BookCollectionItem : EntityBase
+public class BookCollectionItem : AuditEntity
 {
     /// <summary>
     /// The id of the parent collection.

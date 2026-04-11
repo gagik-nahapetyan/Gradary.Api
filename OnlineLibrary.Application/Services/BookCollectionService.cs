@@ -53,6 +53,15 @@ public class BookCollectionService(
         return [.. collections.Select(c => c.ToModel())];
     }
 
+    public async Task DeleteAsync(int id, int callerId, CancellationToken cancellationToken = default)
+    {
+        var collection = await bookCollectionRepository.GetByIdWithItemsAsync(id, cancellationToken);
+        BookCollectionValidator.ValidateGetById(collection, callerId);
+
+        bookCollectionRepository.Delete(collection!);
+        await bookCollectionRepository.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<BookCollectionItemModel> AddBookAsync(int collectionId, BookCollectionItemModel model, int callerId, CancellationToken cancellationToken = default)
     {
         var collection = await bookCollectionRepository.GetByIdWithItemsAsync(collectionId, cancellationToken);

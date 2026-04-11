@@ -6,10 +6,12 @@ namespace OnlineLibrary.Domain.Entities.Configurations;
 /// <summary>
 /// Represents a configuration class for the <see cref="BookCollectionItem"/> entity.
 /// </summary>
-public class BookCollectionItemConfiguration : IEntityTypeConfiguration<BookCollectionItem>
+public class BookCollectionItemConfiguration : AuditEntityConfiguration<BookCollectionItem>
 {
-    public void Configure(EntityTypeBuilder<BookCollectionItem> modelBuilder)
+    public override void Configure(EntityTypeBuilder<BookCollectionItem> modelBuilder)
     {
+        base.Configure(modelBuilder);
+
         #region Foreign Keys
 
         modelBuilder
@@ -30,7 +32,8 @@ public class BookCollectionItemConfiguration : IEntityTypeConfiguration<BookColl
 
         modelBuilder
             .HasIndex(i => new { i.BookCollectionId, i.BookId })
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
 
         modelBuilder
             .HasIndex(i => new { i.BookCollectionId, i.Position });

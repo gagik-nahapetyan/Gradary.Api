@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using OnlineLibrary.Domain.Entities;
+using OnlineLibrary.Domain.Models;
 
 namespace OnlineLibrary.Application.Abstractions.Repositories;
 
@@ -67,6 +68,27 @@ public interface IRepository<TEntity>
     /// <param name="includeDeleted">When true, soft-deleted entities are included.</param>
     /// <returns>The task representing the asynchronous operation wrapped the count.</returns>
     Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default, bool includeDeleted = false);
+
+    /// <summary>
+    /// Retrieves a paginated list of all entities.
+    /// </summary>
+    /// <param name="page">The 1-based page number.</param>
+    /// <param name="pageSize">The number of items per page.</param>
+    /// <param name="cancellationToken">The token to cancel the operation.</param>
+    /// <param name="includeDeleted">When true, soft-deleted entities are included.</param>
+    /// <returns>The task representing the asynchronous operation wrapped the paged list of entities.</returns>
+    Task<PagedList<TEntity>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default, bool includeDeleted = false);
+
+    /// <summary>
+    /// Retrieves a paginated list of entities matching the predicate.
+    /// </summary>
+    /// <param name="predicate">The predicate supplied.</param>
+    /// <param name="page">The 1-based page number.</param>
+    /// <param name="pageSize">The number of items per page.</param>
+    /// <param name="cancellationToken">The token to cancel the operation.</param>
+    /// <param name="includeDeleted">When true, soft-deleted entities are included.</param>
+    /// <returns>The task representing the asynchronous operation wrapped the paged list of filtered entities.</returns>
+    Task<PagedList<TEntity>> FindPagedAsync(Expression<Func<TEntity, bool>> predicate, int page, int pageSize, CancellationToken cancellationToken = default, bool includeDeleted = false);
 
     /// <summary>
     /// Removes the record from the database.

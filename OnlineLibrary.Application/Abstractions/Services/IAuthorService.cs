@@ -8,10 +8,13 @@ namespace OnlineLibrary.Application.Abstractions.Services;
 public interface IAuthorService
 {
     /// <summary>
-    /// Retrieves the list of author models.
+    /// Retrieves a paginated list of author models.
     /// </summary>
-    /// <returns>Task representing an asynchronous operation, wrapping the list of author models.</returns>
-    Task<List<AuthorModel>> GetAsync(CancellationToken cancellationToken = default);
+    /// <param name="page">The page number, starting at 1.</param>
+    /// <param name="pageSize">The number of items per page.</param>
+    /// <param name="cancellationToken">The token to cancel the operation.</param>
+    /// <returns>Task representing an asynchronous operation, wrapping the paged list of author models.</returns>
+    Task<PagedList<AuthorModel>> GetAsync(int page, int pageSize, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves the author model by id.

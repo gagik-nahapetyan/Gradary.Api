@@ -8,10 +8,13 @@ namespace OnlineLibrary.Application.Abstractions.Services;
 public interface IUserService
 {
     /// <summary>
-    /// Retrieves the list of user models.
+    /// Retrieves a paginated list of user models.
     /// </summary>
-    /// <returns>Task representing an asynchronous operation, wrapping the list of user models.</returns>
-    Task<List<UserModel>> GetAsync(CancellationToken cancellationToken = default);
+    /// <param name="page">The page number, starting at 1.</param>
+    /// <param name="pageSize">The number of items per page.</param>
+    /// <param name="cancellationToken">The token to cancel the operation.</param>
+    /// <returns>Task representing an asynchronous operation, wrapping the paged list of user models.</returns>
+    Task<PagedList<UserModel>> GetAsync(int page, int pageSize, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves the user model by id.

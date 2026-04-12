@@ -1,4 +1,5 @@
 using OnlineLibrary.Domain.Entities;
+using OnlineLibrary.Domain.Models;
 
 namespace OnlineLibrary.Application.Abstractions.Repositories;
 
@@ -8,9 +9,11 @@ namespace OnlineLibrary.Application.Abstractions.Repositories;
 public interface IReviewRepository : IRepository<Review>
 {
     /// <summary>
-    /// Gets the reviews by book id.
+    /// Gets a paginated list of reviews for the given book.
     /// </summary>
     /// <param name="bookId">The id of the book.</param>
-    /// <returns>The reviews by book id.</returns>
-    Task<IEnumerable<Review>> GetByBookIdAsync(int bookId, CancellationToken cancellationToken = default);
+    /// <param name="page">The page number, starting at 1.</param>
+    /// <param name="pageSize">The number of items per page.</param>
+    /// <param name="cancellationToken">The token to cancel the operation.</param>
+    Task<PagedList<Review>> GetByBookIdPagedAsync(int bookId, int page, int pageSize, CancellationToken cancellationToken = default);
 }

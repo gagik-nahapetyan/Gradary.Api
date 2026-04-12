@@ -2,6 +2,8 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using OnlineLibrary.Application.Abstractions.Repositories;
 using OnlineLibrary.Domain.Entities;
+using OnlineLibrary.Domain.Models;
+using OnlineLibrary.Persistence.Extensions;
 
 namespace OnlineLibrary.Persistence.Repositories;
 
@@ -67,6 +69,18 @@ public class Repository<TEntity> : IRepository<TEntity>
         var query = includeDeleted ? DbSet.IgnoreQueryFilters() : DbSet.AsQueryable();
 
         return await query.CountAsync(predicate, cancellationToken);
+    }
+
+    public Task<PagedList<TEntity>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default, bool includeDeleted = false)
+    {
+        var query = includeDeleted ? DbSet.IgnoreQueryFilters() : DbSet.AsQueryable();
+        return query.ToPagedListAsync(page, pageSize, cancellationToken);
+    }
+
+    public Task<PagedList<TEntity>> FindPagedAsync(Expression<Func<TEntity, bool>> predicate, int page, int pageSize, CancellationToken cancellationToken = default, bool includeDeleted = false)
+    {
+        var query = includeDeleted ? DbSet.IgnoreQueryFilters() : DbSet.AsQueryable();
+        return query.Where(predicate).ToPagedListAsync(page, pageSize, cancellationToken);
     }
 
     public void Delete(TEntity entity)

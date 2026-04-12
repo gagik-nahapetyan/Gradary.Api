@@ -47,12 +47,17 @@ public class UserService(IUserRepository userRepository, IPasswordHasher passwor
         await userRepository.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<List<UserModel>> GetAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedList<UserModel>> GetAsync(int page, int pageSize, CancellationToken cancellationToken = default)
     {
-        var users = await userRepository.GetAllAsync(cancellationToken);
-        var userModels = users.Select(u => u.ToModel()).ToList();
+        var paged = await userRepository.GetPagedAsync(page, pageSize, cancellationToken);
 
-        return userModels;
+        return new PagedList<UserModel>
+        {
+            Items = paged.Items.Select(u => u.ToModel()).ToList(),
+            TotalCount = paged.TotalCount,
+            CurrentPage = paged.CurrentPage,
+            PageSize = paged.PageSize
+        };
     }
 
     public async Task<UserModel> GetByIdAsync(int id, CancellationToken cancellationToken = default)

@@ -2,7 +2,9 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using OnlineLibrary.Api.Dtos;
 using OnlineLibrary.Api.Dtos.Book;
+using OnlineLibrary.Domain.Models;
 using OnlineLibrary.Domain.Settings;
 using OnlineLibrary.Application.Abstractions.Services;
 
@@ -104,39 +106,58 @@ public class BookController(IBookService bookService, IOptions<FileUploadSetting
         return Ok(dto);
     }
 
-    /// <summary>Gets all books.</summary>
+    /// <summary>Gets a paginated list of books.</summary>
+    /// <param name="pagination">The pagination parameters.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <response code="200">Returns the list of books.</response>
+    /// <response code="200">Returns the paginated list of books.</response>
+    /// <response code="400">If the pagination parameters are invalid.</response>
     /// <response code="500">If an unexpected error occurred.</response>
     [HttpGet]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(List<BookDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PagedList<BookDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Get(CancellationToken cancellationToken)
+    public async Task<IActionResult> Get([FromQuery] PagedRequest pagination, CancellationToken cancellationToken = default)
     {
-        var books = await bookService.GetAsync(cancellationToken);
-        var dtos = books.Select(b => b.ToDto());
+        var paged = await bookService.GetAsync(pagination.Page, pagination.PageSize, cancellationToken);
 
-        return Ok(dtos);
+        return Ok(new PagedList<BookDto>
+        {
+            Items = [.. paged.Items.Select(b => b.ToDto())],
+            TotalCount = paged.TotalCount,
+            CurrentPage = paged.CurrentPage,
+            PageSize = paged.PageSize
+        });
     }
 
-    /// <summary>Gets all books in a category.</summary>
+    /// <summary>Gets a paginated list of books in a category.</summary>
     /// <param name="categoryId">The id of the category.</param>
+    /// <param name="pagination">The pagination parameters.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <response code="200">Returns the list of books.</response>
+    /// <response code="200">Returns the paginated list of books.</response>
+    /// <response code="400">If the pagination parameters are invalid.</response>
     /// <response code="404">If the category was not found.</response>
     /// <response code="500">If an unexpected error occurred.</response>
     [HttpGet("category/{categoryId:int:min(1)}")]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(List<BookDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PagedList<BookDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetByCategoryId(int categoryId, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetByCategoryId(
+        int categoryId, 
+        [FromQuery] PagedRequest pagination, 
+        CancellationToken cancellationToken = default)
     {
-        var books = await bookService.GetByCategoryIdAsync(categoryId, cancellationToken);
-        var dtos = books.Select(b => b.ToDto());
+        var paged = await bookService.GetByCategoryIdAsync(categoryId, pagination.Page, pagination.PageSize, cancellationToken);
 
-        return Ok(dtos);
+        return Ok(new PagedList<BookDto>
+        {
+            Items = [.. paged.Items.Select(b => b.ToDto())],
+            TotalCount = paged.TotalCount,
+            CurrentPage = paged.CurrentPage,
+            PageSize = paged.PageSize
+        });
     }
 
     /// <summary>Soft-deletes a book by id.</summary>

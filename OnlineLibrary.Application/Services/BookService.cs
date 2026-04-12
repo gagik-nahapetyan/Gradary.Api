@@ -64,20 +64,34 @@ public class BookService(IBookRepository bookRepository, ICategoryRepository cat
         return book.ToModel();
     }
 
-    public async Task<List<BookModel>> GetAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedList<BookModel>> GetAsync(int page, int pageSize, CancellationToken cancellationToken = default)
     {
-        var books = await bookRepository.GetAllAsync(cancellationToken);
-        return [.. books.Select(b => b.ToModel())];
+        var paged = await bookRepository.GetPagedAsync(page, pageSize, cancellationToken);
+
+        return new PagedList<BookModel>
+        {
+            Items = paged.Items.Select(b => b.ToModel()).ToList(),
+            TotalCount = paged.TotalCount,
+            CurrentPage = paged.CurrentPage,
+            PageSize = paged.PageSize
+        };
     }
 
-    public async Task<List<BookModel>> GetByCategoryIdAsync(int categoryId, CancellationToken cancellationToken = default)
+    public async Task<PagedList<BookModel>> GetByCategoryIdAsync(int categoryId, int page, int pageSize, CancellationToken cancellationToken = default)
     {
         var categoryExists = await categoryRepository.ExistAsync(c => c.Id == categoryId, cancellationToken);
         if (!categoryExists)
             throw new KeyNotFoundException($"Category with id {categoryId} not found");
 
-        var books = await bookRepository.FindAsync(b => b.CategoryId == categoryId, cancellationToken);
-        return [.. books.Select(b => b.ToModel())];
+        var paged = await bookRepository.FindPagedAsync(b => b.CategoryId == categoryId, page, pageSize, cancellationToken);
+
+        return new PagedList<BookModel>
+        {
+            Items = paged.Items.Select(b => b.ToModel()).ToList(),
+            TotalCount = paged.TotalCount,
+            CurrentPage = paged.CurrentPage,
+            PageSize = paged.PageSize
+        };
     }
 
     public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)

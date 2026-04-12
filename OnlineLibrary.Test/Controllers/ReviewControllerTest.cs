@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using OnlineLibrary.Api.Controllers;
+using OnlineLibrary.Api.Dtos;
 using OnlineLibrary.Api.Dtos.Review;
 using OnlineLibrary.Application.Abstractions.Services;
 using OnlineLibrary.Domain.Enums;
@@ -304,59 +305,72 @@ public class ReviewControllerTests
 
     [Theory]
     [InlineData(5)]
-    public async Task GetReviewsByBookId_ShouldReturnReviews_WhenReviewsExist(int bookId)
+    public async Task GetReviewsByBookId_ShouldReturnPagedReviews_WhenReviewsExist(int bookId)
     {
         // arrange
-        var reviews = new List<ReviewModel>
+        const int page = 1;
+        const int pageSize = 20;
+
+        var pagedReviews = new PagedList<ReviewModel>
         {
-            new() { Id = 1, UserId = 1, BookId = bookId, Rating = BookRating.FiveStars, Comment = "Loved it!" },
-            new() { Id = 2, UserId = 2, BookId = bookId, Rating = BookRating.ThreeStars, Comment = "It was okay." }
+            Items =
+            [
+                new() { Id = 1, UserId = 1, BookId = bookId, Rating = BookRating.FiveStars, Comment = "Loved it!" },
+                new() { Id = 2, UserId = 2, BookId = bookId, Rating = BookRating.ThreeStars, Comment = "It was okay." }
+            ],
+            TotalCount = 2,
+            CurrentPage = page,
+            PageSize = pageSize
         };
 
         _mockReviewService
-            .Setup(s => s.GetByBookIdAsync(bookId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(reviews);
+            .Setup(s => s.GetByBookIdAsync(bookId, page, pageSize, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(pagedReviews);
 
 
         // act
-        var result = await _controller.GetByBookId(bookId, CancellationToken.None);
+        var result = await _controller.GetByBookId(bookId, new PagedRequest { Page = page, PageSize = pageSize }, CancellationToken.None);
 
 
         // assert
         var okResponse = Assert.IsType<OkObjectResult>(result);
-        var dtos = Assert.IsType<List<ReviewDto>>(okResponse.Value);
+        var response = Assert.IsType<PagedList<ReviewDto>>(okResponse.Value);
 
-        Assert.Equal(2, dtos.Count);
-        Assert.Equal(reviews[0].Id, dtos[0].Id);
-        Assert.Equal(reviews[1].Id, dtos[1].Id);
+        Assert.Equal(2, response.Items.Count);
+        Assert.Equal(pagedReviews.TotalCount, response.TotalCount);
+        Assert.Equal(pagedReviews.Items[0].Id, response.Items[0].Id);
+        Assert.Equal(pagedReviews.Items[1].Id, response.Items[1].Id);
 
-        _mockReviewService.Verify(s => s.GetByBookIdAsync(bookId, It.IsAny<CancellationToken>()), Times.Once);
+        _mockReviewService.Verify(s => s.GetByBookIdAsync(bookId, page, pageSize, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Theory]
     [InlineData(5)]
-    public async Task GetReviewsByBookId_ShouldReturnEmptyList_WhenNoReviewsExist(int bookId)
+    public async Task GetReviewsByBookId_ShouldReturnEmptyPage_WhenNoReviewsExist(int bookId)
     {
         // arrange
+        const int page = 1;
+        const int pageSize = 20;
+
         _mockReviewService
-            .Setup(s => s.GetByBookIdAsync(bookId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync([]);
+            .Setup(s => s.GetByBookIdAsync(bookId, page, pageSize, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PagedList<ReviewModel> { Items = [], TotalCount = 0, CurrentPage = page, PageSize = pageSize });
 
 
         // act
-        var result = await _controller.GetByBookId(bookId, CancellationToken.None);
+        var result = await _controller.GetByBookId(bookId, new PagedRequest { Page = page, PageSize = pageSize }, CancellationToken.None);
 
 
         // assert
         var okResponse = Assert.IsType<OkObjectResult>(result);
-        var dtos = Assert.IsType<List<ReviewDto>>(okResponse.Value);
+        var response = Assert.IsType<PagedList<ReviewDto>>(okResponse.Value);
 
-        Assert.Empty(dtos);
+        Assert.Empty(response.Items);
 
-        _mockReviewService.Verify(s => s.GetByBookIdAsync(bookId, It.IsAny<CancellationToken>()), Times.Once);
+        _mockReviewService.Verify(s => s.GetByBookIdAsync(bookId, page, pageSize, It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    [Theory]
+[Theory]
     [InlineData(10)]
     public async Task DeleteReview_ShouldReturnNoContent_WhenCallerIsOwner(int id)
     {

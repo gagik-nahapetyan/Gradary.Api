@@ -1,8 +1,10 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OnlineLibrary.Api.Dtos;
 using OnlineLibrary.Api.Dtos.User;
 using OnlineLibrary.Application.Abstractions.Services;
+using OnlineLibrary.Domain.Models;
 
 namespace OnlineLibrary.Api.Controllers;
 
@@ -104,22 +106,30 @@ public class UserController(IUserService userService) : ControllerBase
         return Ok(dto);
     }
 
-    /// <summary>Gets all users.</summary>
+    /// <summary>Gets a paginated list of users.</summary>
+    /// <param name="pagination">The pagination parameters.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <response code="200">Returns the list of users.</response>
+    /// <response code="200">Returns the paginated list of users.</response>
+    /// <response code="400">If the pagination parameters are invalid.</response>
     /// <response code="401">If the request is not authenticated.</response>
     /// <response code="403">If the user does not have the required role.</response>
     /// <response code="500">If an unexpected error occurred.</response>
     [HttpGet]
     [Authorize(Roles = "Admin,Librarian")]
-    [ProducesResponseType(typeof(List<UserDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PagedList<UserDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Get(CancellationToken cancellationToken)
+    public async Task<IActionResult> Get([FromQuery] PagedRequest pagination, CancellationToken cancellationToken = default)
     {
-        var users = await userService.GetAsync(cancellationToken);
-        var dtos = users.Select(u => u.ToDto()).ToList();
+        var paged = await userService.GetAsync(pagination.Page, pagination.PageSize, cancellationToken);
 
-        return Ok(dtos);
+        return Ok(new PagedList<UserDto>
+        {
+            Items = [.. paged.Items.Select(u => u.ToDto())],
+            TotalCount = paged.TotalCount,
+            CurrentPage = paged.CurrentPage,
+            PageSize = paged.PageSize
+        });
     }
 
     /// <summary>Soft-deletes a user by id. Admins may delete any user; a user may delete themselves.</summary>

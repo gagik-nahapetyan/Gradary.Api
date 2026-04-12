@@ -1,5 +1,6 @@
 using OnlineLibrary.Application.Abstractions.Repositories;
 using OnlineLibrary.Domain.Entities;
+using OnlineLibrary.Domain.Models;
 
 namespace OnlineLibrary.Persistence.Repositories;
 
@@ -12,11 +13,9 @@ public class ReviewRepository : Repository<Review>, IReviewRepository
     {
     }
 
-    public async Task<IEnumerable<Review>> GetByBookIdAsync(int bookId, CancellationToken cancellationToken = default)
+    public Task<PagedList<Review>> GetByBookIdPagedAsync(int bookId, int page, int pageSize, CancellationToken cancellationToken = default)
     {
-        var reviews = await FindAsync(r => r.BookId == bookId, cancellationToken);
-
-        return reviews;
-    }
+        return FindPagedAsync(r => r.BookId == bookId, page, pageSize, cancellationToken);
+    } 
 }
 

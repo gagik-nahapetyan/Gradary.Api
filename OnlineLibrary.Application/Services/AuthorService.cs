@@ -31,12 +31,17 @@ public class AuthorService(IAuthorRepository authorRepository) : IAuthorService
         await authorRepository.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<List<AuthorModel>> GetAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedList<AuthorModel>> GetAsync(int page, int pageSize, CancellationToken cancellationToken = default)
     {
-        var authors = await authorRepository.GetAllAsync(cancellationToken);
-        var authorModels = authors.Select(a => a.ToModel()).ToList();
+        var paged = await authorRepository.GetPagedAsync(page, pageSize, cancellationToken);
 
-        return authorModels;
+        return new PagedList<AuthorModel>
+        {
+            Items = paged.Items.Select(a => a.ToModel()).ToList(),
+            TotalCount = paged.TotalCount,
+            CurrentPage = paged.CurrentPage,
+            PageSize = paged.PageSize
+        };
     }
 
     public async Task<AuthorModel> GetByIdAsync(int id, CancellationToken cancellationToken = default)

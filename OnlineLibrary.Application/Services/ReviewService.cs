@@ -57,12 +57,17 @@ public class ReviewService(
         return reviewModel;
     }
 
-    public async Task<List<ReviewModel>> GetByBookIdAsync(int bookId, CancellationToken cancellationToken = default)
+    public async Task<PagedList<ReviewModel>> GetByBookIdAsync(int bookId, int page, int pageSize, CancellationToken cancellationToken = default)
     {
-        var reviews = await reviewRepository.GetByBookIdAsync(bookId, cancellationToken);
-        var reviewModels = reviews.Select(r => r.ToModel()).ToList();
+        var paged = await reviewRepository.GetByBookIdPagedAsync(bookId, page, pageSize, cancellationToken);
 
-        return reviewModels;
+        return new PagedList<ReviewModel>
+        {
+            Items = paged.Items.Select(r => r.ToModel()).ToList(),
+            TotalCount = paged.TotalCount,
+            CurrentPage = paged.CurrentPage,
+            PageSize = paged.PageSize
+        };
     }
 
     public async Task DeleteAsync(int id, int callerId, CancellationToken cancellationToken = default)

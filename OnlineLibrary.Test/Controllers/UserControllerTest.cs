@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using OnlineLibrary.Api.Controllers;
+using OnlineLibrary.Api.Dtos;
 using OnlineLibrary.Api.Dtos.User;
 using OnlineLibrary.Application.Abstractions.Services;
 using OnlineLibrary.Domain.Enums;
@@ -307,54 +308,68 @@ public class UserControllerTests
     }
 
     [Fact]
-    public async Task GetUsers_ShouldReturnUsers_WhenUsersExist()
+    public async Task GetUsers_ShouldReturnPagedUsers_WhenUsersExist()
     {
         // arrange
-        var users = new List<UserModel>
+        const int page = 1;
+        const int pageSize = 20;
+
+        var pagedUsers = new PagedList<UserModel>
         {
-            new() { Id = 1, FullName = "David Goggins", Email = "david@goggins.com", PasswordHash = "hashed", Role = UserRole.Member },
-            new() { Id = 2, FullName = "Robert Greene", Email = "robert@greene.com", PasswordHash = "hashed", Role = UserRole.Librarian }
+            Items =
+            [
+                new() { Id = 1, FullName = "David Goggins", Email = "david@goggins.com", PasswordHash = "hashed", Role = UserRole.Member },
+                new() { Id = 2, FullName = "Robert Greene", Email = "robert@greene.com", PasswordHash = "hashed", Role = UserRole.Librarian }
+            ],
+            TotalCount = 2,
+            CurrentPage = page,
+            PageSize = pageSize
         };
 
         _mockUserService
-            .Setup(s => s.GetAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(users);
+            .Setup(s => s.GetAsync(page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(pagedUsers);
 
         // act
-        var result = await _controller.Get(CancellationToken.None);
+        var result = await _controller.Get(new PagedRequest { Page = page, PageSize = pageSize }, CancellationToken.None);
 
         // assert
         var okResponse = Assert.IsType<OkObjectResult>(result);
-        var dtos = Assert.IsType<List<UserDto>>(okResponse.Value);
+        var response = Assert.IsType<PagedList<UserDto>>(okResponse.Value);
 
-        Assert.Equal(2, dtos.Count);
-        Assert.Equal(users[0].Id, dtos[0].Id);
-        Assert.Equal(users[1].Id, dtos[1].Id);
+        Assert.Equal(2, response.Items.Count);
+        Assert.Equal(pagedUsers.TotalCount, response.TotalCount);
+        Assert.Equal(pagedUsers.Items[0].Id, response.Items[0].Id);
+        Assert.Equal(pagedUsers.Items[1].Id, response.Items[1].Id);
 
-        _mockUserService.Verify(s => s.GetAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _mockUserService.Verify(s => s.GetAsync(page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task GetUsers_ShouldReturnEmptyList_WhenNoUsersExist()
+    public async Task GetUsers_ShouldReturnEmptyPage_WhenNoUsersExist()
     {
         // arrange
+        const int page = 1;
+        const int pageSize = 20;
+
         _mockUserService
-            .Setup(s => s.GetAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync([]);
+            .Setup(s => s.GetAsync(page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PagedList<UserModel> { Items = [], TotalCount = 0, CurrentPage = page, PageSize = pageSize });
 
         // act
-        var result = await _controller.Get(CancellationToken.None);
+        var result = await _controller.Get(new PagedRequest { Page = page, PageSize = pageSize }, CancellationToken.None);
 
         // assert
         var okResponse = Assert.IsType<OkObjectResult>(result);
-        var dtos = Assert.IsType<List<UserDto>>(okResponse.Value);
+        var response = Assert.IsType<PagedList<UserDto>>(okResponse.Value);
 
-        Assert.Empty(dtos);
+        Assert.Empty(response.Items);
+        Assert.Equal(0, response.TotalCount);
 
-        _mockUserService.Verify(s => s.GetAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _mockUserService.Verify(s => s.GetAsync(page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    [Theory]
+[Theory]
     [InlineData(1)]
     public async Task DeleteUser_ShouldReturnNoContent_WhenCallerIsOwner(int id)
     {

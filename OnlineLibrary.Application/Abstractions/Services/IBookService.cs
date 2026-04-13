@@ -1,4 +1,5 @@
-﻿using OnlineLibrary.Domain.Models;
+﻿using OnlineLibrary.Domain.Enums;
+using OnlineLibrary.Domain.Models;
 
 namespace OnlineLibrary.Application.Abstractions.Services;
 
@@ -33,19 +34,27 @@ public interface IBookService
     Task<BookModel> GetByIdAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves the list of book models.
+    /// Retrieves a paginated list of book models.
     /// </summary>
+    /// <param name="page">The page number, starting at 1.</param>
+    /// <param name="pageSize">The number of items per page.</param>
+    /// <param name="orderBy">The field to sort by: "title", "created". Defaults to "title".</param>
+    /// <param name="orderType">The sort direction.</param>
     /// <param name="cancellationToken">The token to cancel the operation.</param>
-    /// <returns>Task representing an asynchronous operation, wrapping the list of book models.</returns>
-    Task<List<BookModel>> GetAsync(CancellationToken cancellationToken = default);
+    /// <returns>Task representing an asynchronous operation, wrapping the paged list of book models.</returns>
+    Task<PagedList<BookModel>> GetAsync(int page, int pageSize, string? orderBy = null, OrderType orderType = OrderType.Asc, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves all books belonging to the given category.
+    /// Retrieves a paginated list of books belonging to the given category.
     /// </summary>
     /// <param name="categoryId">The id of the category.</param>
+    /// <param name="page">The page number, starting at 1.</param>
+    /// <param name="pageSize">The number of items per page.</param>
+    /// <param name="orderBy">The field to sort by: "title", "created". Defaults to "title".</param>
+    /// <param name="orderType">The sort direction.</param>
     /// <param name="cancellationToken">The token to cancel the operation.</param>
-    /// <returns>Task representing an asynchronous operation, wrapping the list of book models.</returns>
-    Task<List<BookModel>> GetByCategoryIdAsync(int categoryId, CancellationToken cancellationToken = default);
+    /// <returns>Task representing an asynchronous operation, wrapping the paged list of book models.</returns>
+    Task<PagedList<BookModel>> GetByCategoryIdAsync(int categoryId, int page, int pageSize, string? orderBy = null, OrderType orderType = OrderType.Asc, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Uploads the file for a book.

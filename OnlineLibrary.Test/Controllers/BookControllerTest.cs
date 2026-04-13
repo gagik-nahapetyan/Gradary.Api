@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Moq;
 using OnlineLibrary.Api.Controllers;
+using OnlineLibrary.Api.Dtos;
 using OnlineLibrary.Api.Dtos.Book;
 using OnlineLibrary.Application.Abstractions.Services;
+using OnlineLibrary.Domain.Enums;
 using OnlineLibrary.Domain.Models;
 using OnlineLibrary.Domain.Settings;
 
@@ -284,110 +286,136 @@ public class BookControllerTests
     }
 
     [Fact]
-    public async Task GetBooks_ShouldReturnBooks_WhenBooksExist()
+    public async Task GetBooks_ShouldReturnPagedBooks_WhenBooksExist()
     {
         // arrange
-        var books = new List<BookModel>
+        const int page = 1;
+        const int pageSize = 20;
+
+        var pagedBooks = new PagedList<BookModel>
         {
-            new() { Id = 1, Title = "Never Finished", AuthorId = 1, CategoryId = 1 },
-            new() { Id = 2, Title = "Can't Hurt Me", AuthorId = 1, CategoryId = 1 }
+            Items =
+            [
+                new() { Id = 1, Title = "Never Finished", AuthorId = 1, CategoryId = 1 },
+                new() { Id = 2, Title = "Can't Hurt Me", AuthorId = 1, CategoryId = 1 }
+            ],
+            TotalCount = 2,
+            CurrentPage = page,
+            PageSize = pageSize
         };
 
         _mockBookService
-            .Setup(s => s.GetAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(books);
+            .Setup(s => s.GetAsync(page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(pagedBooks);
 
 
         // act
-        var result = await _controller.Get(CancellationToken.None);
+        var result = await _controller.Get(new PagedRequest { Page = page, PageSize = pageSize }, CancellationToken.None);
 
 
         // assert
         var okResponse = Assert.IsType<OkObjectResult>(result);
-        var dtos = Assert.IsAssignableFrom<IEnumerable<BookDto>>(okResponse.Value).ToList();
+        var response = Assert.IsType<PagedList<BookDto>>(okResponse.Value);
 
-        Assert.Equal(2, dtos.Count);
-        Assert.Equal(books[0].Id, dtos[0].Id);
-        Assert.Equal(books[0].Title, dtos[0].Title);
-        Assert.Equal(books[1].Id, dtos[1].Id);
-        Assert.Equal(books[1].Title, dtos[1].Title);
+        Assert.Equal(2, response.Items.Count);
+        Assert.Equal(pagedBooks.TotalCount, response.TotalCount);
+        Assert.Equal(page, response.CurrentPage);
+        Assert.Equal(pageSize, response.PageSize);
+        Assert.Equal(pagedBooks.Items[0].Id, response.Items[0].Id);
+        Assert.Equal(pagedBooks.Items[1].Id, response.Items[1].Id);
 
-        _mockBookService.Verify(s => s.GetAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _mockBookService.Verify(s => s.GetAsync(page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task GetBooks_ShouldReturnEmptyList_WhenNoBooksExist()
+    public async Task GetBooks_ShouldReturnEmptyPage_WhenNoBooksExist()
     {
         // arrange
+        const int page = 1;
+        const int pageSize = 20;
+
         _mockBookService
-            .Setup(s => s.GetAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync([]);
+            .Setup(s => s.GetAsync(page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PagedList<BookModel> { Items = [], TotalCount = 0, CurrentPage = page, PageSize = pageSize });
 
 
         // act
-        var result = await _controller.Get(CancellationToken.None);
+        var result = await _controller.Get(new PagedRequest { Page = page, PageSize = pageSize }, CancellationToken.None);
 
 
         // assert
         var okResponse = Assert.IsType<OkObjectResult>(result);
-        var dtos = Assert.IsAssignableFrom<IEnumerable<BookDto>>(okResponse.Value);
+        var response = Assert.IsType<PagedList<BookDto>>(okResponse.Value);
 
-        Assert.Empty(dtos);
+        Assert.Empty(response.Items);
+        Assert.Equal(0, response.TotalCount);
 
-        _mockBookService.Verify(s => s.GetAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _mockBookService.Verify(s => s.GetAsync(page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    [Theory]
+[Theory]
     [InlineData(3)]
-    public async Task GetBooksByCategoryId_ShouldReturnBooks_WhenCategoryExists(int categoryId)
+    public async Task GetBooksByCategoryId_ShouldReturnPagedBooks_WhenCategoryExists(int categoryId)
     {
         // arrange
-        var books = new List<BookModel>
+        const int page = 1;
+        const int pageSize = 20;
+
+        var pagedBooks = new PagedList<BookModel>
         {
-            new() { Id = 1, Title = "Never Finished", AuthorId = 1, CategoryId = categoryId },
-            new() { Id = 2, Title = "Can't Hurt Me", AuthorId = 1, CategoryId = categoryId }
+            Items =
+            [
+                new() { Id = 1, Title = "Never Finished", AuthorId = 1, CategoryId = categoryId },
+                new() { Id = 2, Title = "Can't Hurt Me", AuthorId = 1, CategoryId = categoryId }
+            ],
+            TotalCount = 2,
+            CurrentPage = page,
+            PageSize = pageSize
         };
 
         _mockBookService
-            .Setup(s => s.GetByCategoryIdAsync(categoryId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(books);
+            .Setup(s => s.GetByCategoryIdAsync(categoryId, page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(pagedBooks);
 
 
         // act
-        var result = await _controller.GetByCategoryId(categoryId, CancellationToken.None);
+        var result = await _controller.GetByCategoryId(categoryId, new PagedRequest { Page = page, PageSize = pageSize }, CancellationToken.None);
 
 
         // assert
         var okResponse = Assert.IsType<OkObjectResult>(result);
-        var dtos = Assert.IsAssignableFrom<IEnumerable<BookDto>>(okResponse.Value).ToList();
+        var response = Assert.IsType<PagedList<BookDto>>(okResponse.Value);
 
-        Assert.Equal(books.Count, dtos.Count);
-        Assert.All(dtos, dto => Assert.Equal(categoryId, dto.CategoryId));
+        Assert.Equal(pagedBooks.Items.Count, response.Items.Count);
+        Assert.All(response.Items, dto => Assert.Equal(categoryId, dto.CategoryId));
 
-        _mockBookService.Verify(s => s.GetByCategoryIdAsync(categoryId, It.IsAny<CancellationToken>()), Times.Once);
+        _mockBookService.Verify(s => s.GetByCategoryIdAsync(categoryId, page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Theory]
     [InlineData(3)]
-    public async Task GetBooksByCategoryId_ShouldReturnEmptyList_WhenCategoryHasNoBooks(int categoryId)
+    public async Task GetBooksByCategoryId_ShouldReturnEmptyPage_WhenCategoryHasNoBooks(int categoryId)
     {
         // arrange
+        const int page = 1;
+        const int pageSize = 20;
+
         _mockBookService
-            .Setup(s => s.GetByCategoryIdAsync(categoryId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync([]);
+            .Setup(s => s.GetByCategoryIdAsync(categoryId, page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PagedList<BookModel> { Items = [], TotalCount = 0, CurrentPage = page, PageSize = pageSize });
 
 
         // act
-        var result = await _controller.GetByCategoryId(categoryId, CancellationToken.None);
+        var result = await _controller.GetByCategoryId(categoryId, new PagedRequest { Page = page, PageSize = pageSize }, CancellationToken.None);
 
 
         // assert
         var okResponse = Assert.IsType<OkObjectResult>(result);
-        var dtos = Assert.IsAssignableFrom<IEnumerable<BookDto>>(okResponse.Value);
+        var response = Assert.IsType<PagedList<BookDto>>(okResponse.Value);
 
-        Assert.Empty(dtos);
+        Assert.Empty(response.Items);
 
-        _mockBookService.Verify(s => s.GetByCategoryIdAsync(categoryId, It.IsAny<CancellationToken>()), Times.Once);
+        _mockBookService.Verify(s => s.GetByCategoryIdAsync(categoryId, page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Theory]
@@ -395,20 +423,23 @@ public class BookControllerTests
     public async Task GetBooksByCategoryId_ShouldThrowKeyNotFoundException_WhenCategoryDoesNotExist(int categoryId)
     {
         // arrange
+        const int page = 1;
+        const int pageSize = 20;
+
         var expectedMessage = $"Category with id {categoryId} not found";
         _mockBookService
-            .Setup(s => s.GetByCategoryIdAsync(categoryId, It.IsAny<CancellationToken>()))
+            .Setup(s => s.GetByCategoryIdAsync(categoryId, page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new KeyNotFoundException(expectedMessage));
 
 
         // act & assert — global exception middleware maps this to 404 ProblemDetails when the API runs end-to-end
-        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.GetByCategoryId(categoryId, CancellationToken.None));
+        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.GetByCategoryId(categoryId, new PagedRequest { Page = page, PageSize = pageSize }, CancellationToken.None));
         Assert.Equal(expectedMessage, ex.Message);
 
-        _mockBookService.Verify(s => s.GetByCategoryIdAsync(categoryId, It.IsAny<CancellationToken>()), Times.Once);
+        _mockBookService.Verify(s => s.GetByCategoryIdAsync(categoryId, page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    [Theory]
+[Theory]
     [InlineData(5)]
     public async Task DeleteBook_ShouldReturnNoContent_WhenBookExists(int id)
     {

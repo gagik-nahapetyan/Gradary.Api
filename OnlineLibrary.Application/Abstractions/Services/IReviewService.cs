@@ -1,3 +1,4 @@
+using OnlineLibrary.Domain.Enums;
 using OnlineLibrary.Domain.Models;
 
 namespace OnlineLibrary.Application.Abstractions.Services;
@@ -23,12 +24,16 @@ public interface IReviewService
     Task UpdateAsync(ReviewModel model, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves the list of review models by book id.
+    /// Retrieves a paginated list of review models for the given book.
     /// </summary>
     /// <param name="bookId">The id of the book.</param>
+    /// <param name="page">The page number, starting at 1.</param>
+    /// <param name="pageSize">The number of items per page.</param>
+    /// <param name="orderBy">The field to sort by: "rating", "created". Defaults to "created" descending.</param>
+    /// <param name="orderType">The sort direction.</param>
     /// <param name="cancellationToken">The token to cancel the operation.</param>
-    /// <returns>Task representing an asynchronous operation, wrapping the list of review models.</returns>
-    Task<List<ReviewModel>> GetByBookIdAsync(int bookId, CancellationToken cancellationToken = default);
+    /// <returns>Task representing an asynchronous operation, wrapping the paged list of review models.</returns>
+    Task<PagedList<ReviewModel>> GetByBookIdAsync(int bookId, int page, int pageSize, string? orderBy = null, OrderType orderType = OrderType.Desc, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves the review model by id.

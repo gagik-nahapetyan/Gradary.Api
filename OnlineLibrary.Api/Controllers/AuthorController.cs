@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OnlineLibrary.Api.Dtos;
 using OnlineLibrary.Api.Dtos.Author;
 using OnlineLibrary.Application.Abstractions.Services;
+using OnlineLibrary.Domain.Models;
 
 namespace OnlineLibrary.Api.Controllers;
 
@@ -71,20 +73,28 @@ public class AuthorController(IAuthorService authorService) : ControllerBase
         return Ok(dto);
     }
 
-    /// <summary>Gets all authors.</summary>
+    /// <summary>Gets a paginated list of authors.</summary>
+    /// <param name="pagination">The pagination parameters.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <response code="200">Returns the list of authors.</response>
+    /// <response code="200">Returns the paginated list of authors.</response>
+    /// <response code="400">If the pagination parameters are invalid.</response>
     /// <response code="500">If an unexpected error occurred.</response>
     [HttpGet]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(List<AuthorDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PagedList<AuthorDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Get(CancellationToken cancellationToken)
+    public async Task<IActionResult> Get([FromQuery] PagedRequest pagination, CancellationToken cancellationToken = default)
     {
-        var authors = await authorService.GetAsync(cancellationToken);
-        var dtos = authors.Select(a => a.ToDto()).ToList();
+        var paged = await authorService.GetAsync(pagination.Page, pagination.PageSize, pagination.OrderBy, pagination.OrderType, cancellationToken);
 
-        return Ok(dtos);
+        return Ok(new PagedList<AuthorDto>
+        {
+            Items = [.. paged.Items.Select(m => m.ToDto())],
+            TotalCount = paged.TotalCount,
+            CurrentPage = paged.CurrentPage,
+            PageSize = paged.PageSize
+        });
     }
 
     /// <summary>Soft-deletes an author by id.</summary>

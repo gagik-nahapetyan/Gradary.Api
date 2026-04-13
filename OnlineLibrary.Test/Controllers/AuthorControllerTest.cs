@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using OnlineLibrary.Api.Controllers;
+using OnlineLibrary.Api.Dtos;
 using OnlineLibrary.Api.Dtos.Author;
 using OnlineLibrary.Application.Abstractions.Services;
+using OnlineLibrary.Domain.Enums;
 using OnlineLibrary.Domain.Models;
 
 namespace OnlineLibrary.Test.Controllers;
@@ -160,42 +162,46 @@ public class AuthorControllerTests
     }
 
     [Fact]
-    public async Task GetAuthors_ShouldReturnAuthors_WhenAuthorsExist()
+    public async Task GetAuthors_ShouldReturnPagedAuthors_WhenAuthorsExist()
     {
         // arrange
-        var authors = new List<AuthorModel>
+        const int page = 1;
+        const int pageSize = 20;
+
+        var pagedAuthors = new PagedList<AuthorModel>
         {
-            new()
-            {
-                Id = 1,
-                FullName = "David Goggins",
-                Biography = "Can't Heart Me"
-            },
-            new()
-            {
-                Id = 2,
-                FullName = "Robert Greene",
-                Biography = "The Laws of Human Nature"
-            }
+            Items =
+            [
+                new() { Id = 1, FullName = "David Goggins", Biography = "Can't Heart Me" },
+                new() { Id = 2, FullName = "Robert Greene", Biography = "The Laws of Human Nature" }
+            ],
+            TotalCount = 2,
+            CurrentPage = page,
+            PageSize = pageSize
         };
 
-        _mockAuthorService.Setup(s => s.GetAsync(It.IsAny<CancellationToken>())).ReturnsAsync(authors);
+        _mockAuthorService
+            .Setup(s => s.GetAsync(page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(pagedAuthors);
 
         // act
-        var result = await _controller.Get(CancellationToken.None);
+        var result = await _controller.Get(new PagedRequest { Page = page, PageSize = pageSize }, CancellationToken.None);
 
         // assert
         var okResponse = Assert.IsType<OkObjectResult>(result);
-        var dtos = Assert.IsType<List<AuthorDto>>(okResponse.Value);
+        var response = Assert.IsType<PagedList<AuthorDto>>(okResponse.Value);
 
-        Assert.Equal(2, dtos.Count);
-        Assert.Equal(authors[0].Id, dtos[0].Id);
-        Assert.Equal(authors[1].Id, dtos[1].Id);
+        Assert.Equal(2, response.Items.Count);
+        Assert.Equal(pagedAuthors.TotalCount, response.TotalCount);
+        Assert.Equal(page, response.CurrentPage);
+        Assert.Equal(pageSize, response.PageSize);
+        Assert.Equal(pagedAuthors.Items[0].Id, response.Items[0].Id);
+        Assert.Equal(pagedAuthors.Items[1].Id, response.Items[1].Id);
 
-        _mockAuthorService.Verify(s => s.GetAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _mockAuthorService.Verify(s => s.GetAsync(page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    [Theory]
+[Theory]
     [InlineData(123)]
     public async Task DeleteAuthor_ShouldReturnNoContent_WhenAuthorExists(int id)
     {

@@ -1,8 +1,10 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OnlineLibrary.Api.Dtos;
 using OnlineLibrary.Api.Dtos.Review;
 using OnlineLibrary.Application.Abstractions.Services;
+using OnlineLibrary.Domain.Models;
 
 namespace OnlineLibrary.Api.Controllers;
 
@@ -43,7 +45,10 @@ public class ReviewController(IReviewService reviewService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Update(int id, [FromBody] ReviewRequest input, CancellationToken cancellationToken)
+    public async Task<IActionResult> Update(
+        int id, 
+        [FromBody] ReviewRequest input, 
+        CancellationToken cancellationToken)
     {
         var model = input.ToModel(id);
         await reviewService.UpdateAsync(model, cancellationToken);
@@ -70,21 +75,32 @@ public class ReviewController(IReviewService reviewService) : ControllerBase
         return Ok(dto);
     }
 
-    /// <summary>Gets all reviews for a book.</summary>
+    /// <summary>Gets a paginated list of reviews for a book.</summary>
     /// <param name="bookId">The id of the book.</param>
+    /// <param name="pagination">The pagination parameters.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <response code="200">Returns the list of reviews for the book.</response>
+    /// <response code="200">Returns the paginated list of reviews for the book.</response>
+    /// <response code="400">If the pagination parameters are invalid.</response>
     /// <response code="500">If an unexpected error occurred.</response>
     [HttpGet("book/{bookId:int:min(1)}")]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(List<ReviewDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PagedList<ReviewDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetByBookId(int bookId, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetByBookId(
+        int bookId,
+        [FromQuery] PagedRequest pagination,
+        CancellationToken cancellationToken = default)
     {
-        var models = await reviewService.GetByBookIdAsync(bookId, cancellationToken);
-        var dtos = models.Select(m => m.ToDto()).ToList();
+        var paged = await reviewService.GetByBookIdAsync(bookId, pagination.Page, pagination.PageSize, pagination.OrderBy, pagination.OrderType, cancellationToken);
 
-        return Ok(dtos);
+        return Ok(new PagedList<ReviewDto>
+        {
+            Items = [.. paged.Items.Select(m => m.ToDto())],
+            TotalCount = paged.TotalCount,
+            CurrentPage = paged.CurrentPage,
+            PageSize = paged.PageSize
+        });
     }
 
     /// <summary>Soft-deletes a review by id. Only the owner may delete their review.</summary>

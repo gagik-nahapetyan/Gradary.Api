@@ -1,5 +1,7 @@
 using OnlineLibrary.Application.Abstractions.Repositories;
 using OnlineLibrary.Application.Abstractions.Services;
+using OnlineLibrary.Domain.Entities;
+using OnlineLibrary.Domain.Enums;
 using OnlineLibrary.Domain.Models;
 
 namespace OnlineLibrary.Application.Services;
@@ -64,21 +66,46 @@ public class BookService(IBookRepository bookRepository, ICategoryRepository cat
         return book.ToModel();
     }
 
-    public async Task<List<BookModel>> GetAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedList<BookModel>> GetAsync(int page, int pageSize, string? orderBy = null, OrderType orderType = OrderType.Asc, CancellationToken cancellationToken = default)
     {
-        var books = await bookRepository.GetAllAsync(cancellationToken);
-        return [.. books.Select(b => b.ToModel())];
+        var paged = await bookRepository.GetPagedAsync(page, pageSize, BuildOrderBy(orderBy, orderType), cancellationToken);
+
+        return new PagedList<BookModel>
+        {
+            Items = paged.Items.Select(b => b.ToModel()).ToList(),
+            TotalCount = paged.TotalCount,
+            CurrentPage = paged.CurrentPage,
+            PageSize = paged.PageSize
+        };
     }
 
-    public async Task<List<BookModel>> GetByCategoryIdAsync(int categoryId, CancellationToken cancellationToken = default)
+    public async Task<PagedList<BookModel>> GetByCategoryIdAsync(int categoryId, int page, int pageSize, string? orderBy = null, OrderType orderType = OrderType.Asc, CancellationToken cancellationToken = default)
     {
         var categoryExists = await categoryRepository.ExistAsync(c => c.Id == categoryId, cancellationToken);
         if (!categoryExists)
             throw new KeyNotFoundException($"Category with id {categoryId} not found");
 
-        var books = await bookRepository.FindAsync(b => b.CategoryId == categoryId, cancellationToken);
-        return [.. books.Select(b => b.ToModel())];
+        var paged = await bookRepository.FindPagedAsync(b => b.CategoryId == categoryId, page, pageSize, BuildOrderBy(orderBy, orderType), cancellationToken);
+
+        return new PagedList<BookModel>
+        {
+            Items = paged.Items.Select(b => b.ToModel()).ToList(),
+            TotalCount = paged.TotalCount,
+            CurrentPage = paged.CurrentPage,
+            PageSize = paged.PageSize
+        };
     }
+
+    private static Func<IQueryable<Book>, IOrderedQueryable<Book>> BuildOrderBy(string? orderBy, OrderType orderType) =>
+        orderBy?.ToLower() switch
+        {
+            "created" => orderType == OrderType.Desc
+                ? q => q.OrderByDescending(b => b.CreatedAt)
+                : q => q.OrderBy(b => b.CreatedAt),
+            _ => orderType == OrderType.Desc
+                ? q => q.OrderByDescending(b => b.Title)
+                : q => q.OrderBy(b => b.Title)
+        };
 
     public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
     {

@@ -14,6 +14,7 @@ public interface IReviewRepository : IRepository<Review>
     /// <param name="bookId">The id of the book.</param>
     /// <param name="page">The page number, starting at 1.</param>
     /// <param name="pageSize">The number of items per page.</param>
+    /// <param name="orderBy">Optional ordering delegate applied before pagination.</param>
     /// <param name="cancellationToken">The token to cancel the operation.</param>
-    Task<PagedList<Review>> GetByBookIdPagedAsync(int bookId, int page, int pageSize, CancellationToken cancellationToken = default);
+    Task<PagedList<Review>> GetByBookIdPagedAsync(int bookId, int page, int pageSize, Func<IQueryable<Review>, IOrderedQueryable<Review>>? orderBy = null, CancellationToken cancellationToken = default);
 }

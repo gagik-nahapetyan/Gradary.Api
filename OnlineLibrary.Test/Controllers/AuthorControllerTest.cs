@@ -4,6 +4,7 @@ using OnlineLibrary.Api.Controllers;
 using OnlineLibrary.Api.Dtos;
 using OnlineLibrary.Api.Dtos.Author;
 using OnlineLibrary.Application.Abstractions.Services;
+using OnlineLibrary.Domain.Enums;
 using OnlineLibrary.Domain.Models;
 
 namespace OnlineLibrary.Test.Controllers;
@@ -180,7 +181,7 @@ public class AuthorControllerTests
         };
 
         _mockAuthorService
-            .Setup(s => s.GetAsync(page, pageSize, It.IsAny<CancellationToken>()))
+            .Setup(s => s.GetAsync(page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(pagedAuthors);
 
         // act
@@ -197,7 +198,7 @@ public class AuthorControllerTests
         Assert.Equal(pagedAuthors.Items[0].Id, response.Items[0].Id);
         Assert.Equal(pagedAuthors.Items[1].Id, response.Items[1].Id);
 
-        _mockAuthorService.Verify(s => s.GetAsync(page, pageSize, It.IsAny<CancellationToken>()), Times.Once);
+        _mockAuthorService.Verify(s => s.GetAsync(page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
 [Theory]

@@ -1,5 +1,7 @@
 using OnlineLibrary.Application.Abstractions.Repositories;
 using OnlineLibrary.Application.Abstractions.Services;
+using OnlineLibrary.Domain.Entities;
+using OnlineLibrary.Domain.Enums;
 using OnlineLibrary.Domain.Models;
 
 namespace OnlineLibrary.Application.Services;
@@ -31,9 +33,9 @@ public class AuthorService(IAuthorRepository authorRepository) : IAuthorService
         await authorRepository.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<PagedList<AuthorModel>> GetAsync(int page, int pageSize, CancellationToken cancellationToken = default)
+    public async Task<PagedList<AuthorModel>> GetAsync(int page, int pageSize, string? orderBy = null, OrderType orderType = OrderType.Asc, CancellationToken cancellationToken = default)
     {
-        var paged = await authorRepository.GetPagedAsync(page, pageSize, cancellationToken);
+        var paged = await authorRepository.GetPagedAsync(page, pageSize, BuildOrderBy(orderBy, orderType), cancellationToken);
 
         return new PagedList<AuthorModel>
         {
@@ -64,4 +66,15 @@ public class AuthorService(IAuthorRepository authorRepository) : IAuthorService
         authorRepository.Delete(author);
         await authorRepository.SaveChangesAsync(cancellationToken);
     }
+
+    private static Func<IQueryable<Author>, IOrderedQueryable<Author>> BuildOrderBy(string? orderBy, OrderType orderType) =>
+        orderBy?.ToLower() switch
+        {
+            "created" => orderType == OrderType.Desc
+                ? q => q.OrderByDescending(a => a.CreatedAt)
+                : q => q.OrderBy(a => a.CreatedAt),
+            _ => orderType == OrderType.Desc
+                ? q => q.OrderByDescending(a => a.FullName)
+                : q => q.OrderBy(a => a.FullName)
+        };
 }

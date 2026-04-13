@@ -6,6 +6,7 @@ using OnlineLibrary.Api.Controllers;
 using OnlineLibrary.Api.Dtos;
 using OnlineLibrary.Api.Dtos.Book;
 using OnlineLibrary.Application.Abstractions.Services;
+using OnlineLibrary.Domain.Enums;
 using OnlineLibrary.Domain.Models;
 using OnlineLibrary.Domain.Settings;
 
@@ -304,7 +305,7 @@ public class BookControllerTests
         };
 
         _mockBookService
-            .Setup(s => s.GetAsync(page, pageSize, It.IsAny<CancellationToken>()))
+            .Setup(s => s.GetAsync(page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(pagedBooks);
 
 
@@ -323,7 +324,7 @@ public class BookControllerTests
         Assert.Equal(pagedBooks.Items[0].Id, response.Items[0].Id);
         Assert.Equal(pagedBooks.Items[1].Id, response.Items[1].Id);
 
-        _mockBookService.Verify(s => s.GetAsync(page, pageSize, It.IsAny<CancellationToken>()), Times.Once);
+        _mockBookService.Verify(s => s.GetAsync(page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -334,7 +335,7 @@ public class BookControllerTests
         const int pageSize = 20;
 
         _mockBookService
-            .Setup(s => s.GetAsync(page, pageSize, It.IsAny<CancellationToken>()))
+            .Setup(s => s.GetAsync(page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PagedList<BookModel> { Items = [], TotalCount = 0, CurrentPage = page, PageSize = pageSize });
 
 
@@ -349,7 +350,7 @@ public class BookControllerTests
         Assert.Empty(response.Items);
         Assert.Equal(0, response.TotalCount);
 
-        _mockBookService.Verify(s => s.GetAsync(page, pageSize, It.IsAny<CancellationToken>()), Times.Once);
+        _mockBookService.Verify(s => s.GetAsync(page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
 [Theory]
@@ -373,7 +374,7 @@ public class BookControllerTests
         };
 
         _mockBookService
-            .Setup(s => s.GetByCategoryIdAsync(categoryId, page, pageSize, It.IsAny<CancellationToken>()))
+            .Setup(s => s.GetByCategoryIdAsync(categoryId, page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(pagedBooks);
 
 
@@ -388,7 +389,7 @@ public class BookControllerTests
         Assert.Equal(pagedBooks.Items.Count, response.Items.Count);
         Assert.All(response.Items, dto => Assert.Equal(categoryId, dto.CategoryId));
 
-        _mockBookService.Verify(s => s.GetByCategoryIdAsync(categoryId, page, pageSize, It.IsAny<CancellationToken>()), Times.Once);
+        _mockBookService.Verify(s => s.GetByCategoryIdAsync(categoryId, page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Theory]
@@ -400,7 +401,7 @@ public class BookControllerTests
         const int pageSize = 20;
 
         _mockBookService
-            .Setup(s => s.GetByCategoryIdAsync(categoryId, page, pageSize, It.IsAny<CancellationToken>()))
+            .Setup(s => s.GetByCategoryIdAsync(categoryId, page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PagedList<BookModel> { Items = [], TotalCount = 0, CurrentPage = page, PageSize = pageSize });
 
 
@@ -414,7 +415,7 @@ public class BookControllerTests
 
         Assert.Empty(response.Items);
 
-        _mockBookService.Verify(s => s.GetByCategoryIdAsync(categoryId, page, pageSize, It.IsAny<CancellationToken>()), Times.Once);
+        _mockBookService.Verify(s => s.GetByCategoryIdAsync(categoryId, page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Theory]
@@ -427,7 +428,7 @@ public class BookControllerTests
 
         var expectedMessage = $"Category with id {categoryId} not found";
         _mockBookService
-            .Setup(s => s.GetByCategoryIdAsync(categoryId, page, pageSize, It.IsAny<CancellationToken>()))
+            .Setup(s => s.GetByCategoryIdAsync(categoryId, page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new KeyNotFoundException(expectedMessage));
 
 
@@ -435,7 +436,7 @@ public class BookControllerTests
         var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _controller.GetByCategoryId(categoryId, new PagedRequest { Page = page, PageSize = pageSize }, CancellationToken.None));
         Assert.Equal(expectedMessage, ex.Message);
 
-        _mockBookService.Verify(s => s.GetByCategoryIdAsync(categoryId, page, pageSize, It.IsAny<CancellationToken>()), Times.Once);
+        _mockBookService.Verify(s => s.GetByCategoryIdAsync(categoryId, page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
 [Theory]

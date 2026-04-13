@@ -74,10 +74,16 @@ public interface IRepository<TEntity>
     /// </summary>
     /// <param name="page">The 1-based page number.</param>
     /// <param name="pageSize">The number of items per page.</param>
+    /// <param name="orderBy">Optional ordering delegate applied before pagination.</param>
     /// <param name="cancellationToken">The token to cancel the operation.</param>
     /// <param name="includeDeleted">When true, soft-deleted entities are included.</param>
     /// <returns>The task representing the asynchronous operation wrapped the paged list of entities.</returns>
-    Task<PagedList<TEntity>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default, bool includeDeleted = false);
+    Task<PagedList<TEntity>> GetPagedAsync(
+        int page, 
+        int pageSize, 
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null, 
+        CancellationToken cancellationToken = default, 
+        bool includeDeleted = false);
 
     /// <summary>
     /// Retrieves a paginated list of entities matching the predicate.
@@ -85,10 +91,17 @@ public interface IRepository<TEntity>
     /// <param name="predicate">The predicate supplied.</param>
     /// <param name="page">The 1-based page number.</param>
     /// <param name="pageSize">The number of items per page.</param>
+    /// <param name="orderBy">Optional ordering delegate applied before pagination.</param>
     /// <param name="cancellationToken">The token to cancel the operation.</param>
     /// <param name="includeDeleted">When true, soft-deleted entities are included.</param>
     /// <returns>The task representing the asynchronous operation wrapped the paged list of filtered entities.</returns>
-    Task<PagedList<TEntity>> FindPagedAsync(Expression<Func<TEntity, bool>> predicate, int page, int pageSize, CancellationToken cancellationToken = default, bool includeDeleted = false);
+    Task<PagedList<TEntity>> FindPagedAsync(
+        Expression<Func<TEntity, bool>> predicate, 
+        int page, 
+        int pageSize, 
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null, 
+        CancellationToken cancellationToken = default, 
+        bool includeDeleted = false);
 
     /// <summary>
     /// Removes the record from the database.

@@ -324,7 +324,7 @@ public class ReviewControllerTests
         };
 
         _mockReviewService
-            .Setup(s => s.GetByBookIdAsync(bookId, page, pageSize, It.IsAny<CancellationToken>()))
+            .Setup(s => s.GetByBookIdAsync(bookId, page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(pagedReviews);
 
 
@@ -341,7 +341,7 @@ public class ReviewControllerTests
         Assert.Equal(pagedReviews.Items[0].Id, response.Items[0].Id);
         Assert.Equal(pagedReviews.Items[1].Id, response.Items[1].Id);
 
-        _mockReviewService.Verify(s => s.GetByBookIdAsync(bookId, page, pageSize, It.IsAny<CancellationToken>()), Times.Once);
+        _mockReviewService.Verify(s => s.GetByBookIdAsync(bookId, page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Theory]
@@ -353,7 +353,7 @@ public class ReviewControllerTests
         const int pageSize = 20;
 
         _mockReviewService
-            .Setup(s => s.GetByBookIdAsync(bookId, page, pageSize, It.IsAny<CancellationToken>()))
+            .Setup(s => s.GetByBookIdAsync(bookId, page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PagedList<ReviewModel> { Items = [], TotalCount = 0, CurrentPage = page, PageSize = pageSize });
 
 
@@ -367,7 +367,7 @@ public class ReviewControllerTests
 
         Assert.Empty(response.Items);
 
-        _mockReviewService.Verify(s => s.GetByBookIdAsync(bookId, page, pageSize, It.IsAny<CancellationToken>()), Times.Once);
+        _mockReviewService.Verify(s => s.GetByBookIdAsync(bookId, page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
 [Theory]

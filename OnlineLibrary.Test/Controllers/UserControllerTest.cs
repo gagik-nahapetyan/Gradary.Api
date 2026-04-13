@@ -327,7 +327,7 @@ public class UserControllerTests
         };
 
         _mockUserService
-            .Setup(s => s.GetAsync(page, pageSize, It.IsAny<CancellationToken>()))
+            .Setup(s => s.GetAsync(page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(pagedUsers);
 
         // act
@@ -342,7 +342,7 @@ public class UserControllerTests
         Assert.Equal(pagedUsers.Items[0].Id, response.Items[0].Id);
         Assert.Equal(pagedUsers.Items[1].Id, response.Items[1].Id);
 
-        _mockUserService.Verify(s => s.GetAsync(page, pageSize, It.IsAny<CancellationToken>()), Times.Once);
+        _mockUserService.Verify(s => s.GetAsync(page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -353,7 +353,7 @@ public class UserControllerTests
         const int pageSize = 20;
 
         _mockUserService
-            .Setup(s => s.GetAsync(page, pageSize, It.IsAny<CancellationToken>()))
+            .Setup(s => s.GetAsync(page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PagedList<UserModel> { Items = [], TotalCount = 0, CurrentPage = page, PageSize = pageSize });
 
         // act
@@ -366,7 +366,7 @@ public class UserControllerTests
         Assert.Empty(response.Items);
         Assert.Equal(0, response.TotalCount);
 
-        _mockUserService.Verify(s => s.GetAsync(page, pageSize, It.IsAny<CancellationToken>()), Times.Once);
+        _mockUserService.Verify(s => s.GetAsync(page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
 [Theory]

@@ -71,16 +71,27 @@ public class Repository<TEntity> : IRepository<TEntity>
         return await query.CountAsync(predicate, cancellationToken);
     }
 
-    public Task<PagedList<TEntity>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default, bool includeDeleted = false)
+    public Task<PagedList<TEntity>> GetPagedAsync(
+        int page, 
+        int pageSize, 
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null, 
+        CancellationToken cancellationToken = default, 
+        bool includeDeleted = false)
     {
         var query = includeDeleted ? DbSet.IgnoreQueryFilters() : DbSet.AsQueryable();
-        return query.ToPagedListAsync(page, pageSize, cancellationToken);
+        return query.ToPagedListAsync(page, pageSize, orderBy, cancellationToken);
     }
 
-    public Task<PagedList<TEntity>> FindPagedAsync(Expression<Func<TEntity, bool>> predicate, int page, int pageSize, CancellationToken cancellationToken = default, bool includeDeleted = false)
+    public Task<PagedList<TEntity>> FindPagedAsync(
+        Expression<Func<TEntity, bool>> predicate, 
+        int page, 
+        int pageSize, 
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null, 
+        CancellationToken cancellationToken = default, 
+        bool includeDeleted = false)
     {
         var query = includeDeleted ? DbSet.IgnoreQueryFilters() : DbSet.AsQueryable();
-        return query.Where(predicate).ToPagedListAsync(page, pageSize, cancellationToken);
+        return query.Where(predicate).ToPagedListAsync(page, pageSize, orderBy, cancellationToken);
     }
 
     public void Delete(TEntity entity)

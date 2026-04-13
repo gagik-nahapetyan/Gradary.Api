@@ -1,5 +1,7 @@
 using OnlineLibrary.Application.Abstractions.Repositories;
 using OnlineLibrary.Application.Abstractions.Services;
+using OnlineLibrary.Domain.Entities;
+using OnlineLibrary.Domain.Enums;
 using OnlineLibrary.Domain.Models;
 
 namespace OnlineLibrary.Application.Services;
@@ -47,9 +49,9 @@ public class UserService(IUserRepository userRepository, IPasswordHasher passwor
         await userRepository.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<PagedList<UserModel>> GetAsync(int page, int pageSize, CancellationToken cancellationToken = default)
+    public async Task<PagedList<UserModel>> GetAsync(int page, int pageSize, string? orderBy = null, OrderType orderType = OrderType.Asc, CancellationToken cancellationToken = default)
     {
-        var paged = await userRepository.GetPagedAsync(page, pageSize, cancellationToken);
+        var paged = await userRepository.GetPagedAsync(page, pageSize, BuildOrderBy(orderBy, orderType), cancellationToken);
 
         return new PagedList<UserModel>
         {
@@ -80,4 +82,21 @@ public class UserService(IUserRepository userRepository, IPasswordHasher passwor
         userRepository.Delete(user);
         await userRepository.SaveChangesAsync(cancellationToken);
     }
+
+    private static Func<IQueryable<User>, IOrderedQueryable<User>> BuildOrderBy(string? orderBy, OrderType orderType) =>
+        orderBy?.ToLower() switch
+        {
+            "email" => orderType == OrderType.Desc
+                ? q => q.OrderByDescending(u => u.Email)
+                : q => q.OrderBy(u => u.Email),
+            "role" => orderType == OrderType.Desc
+                ? q => q.OrderByDescending(u => u.Role)
+                : q => q.OrderBy(u => u.Role),
+            "created" => orderType == OrderType.Desc
+                ? q => q.OrderByDescending(u => u.CreatedAt)
+                : q => q.OrderBy(u => u.CreatedAt),
+            _ => orderType == OrderType.Desc
+                ? q => q.OrderByDescending(u => u.FullName)
+                : q => q.OrderBy(u => u.FullName)
+        };
 }

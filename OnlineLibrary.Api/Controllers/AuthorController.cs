@@ -86,7 +86,7 @@ public class AuthorController(IAuthorService authorService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Get([FromQuery] PagedRequest pagination, CancellationToken cancellationToken = default)
     {
-        var paged = await authorService.GetAsync(pagination.Page, pagination.PageSize, cancellationToken);
+        var paged = await authorService.GetAsync(pagination.Page, pagination.PageSize, pagination.OrderBy, pagination.OrderType, cancellationToken);
 
         return Ok(new PagedList<AuthorDto>
         {

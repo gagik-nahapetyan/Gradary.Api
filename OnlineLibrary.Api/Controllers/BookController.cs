@@ -119,7 +119,7 @@ public class BookController(IBookService bookService, IOptions<FileUploadSetting
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Get([FromQuery] PagedRequest pagination, CancellationToken cancellationToken = default)
     {
-        var paged = await bookService.GetAsync(pagination.Page, pagination.PageSize, cancellationToken);
+        var paged = await bookService.GetAsync(pagination.Page, pagination.PageSize, pagination.OrderBy, pagination.OrderType, cancellationToken);
 
         return Ok(new PagedList<BookDto>
         {
@@ -149,7 +149,7 @@ public class BookController(IBookService bookService, IOptions<FileUploadSetting
         [FromQuery] PagedRequest pagination, 
         CancellationToken cancellationToken = default)
     {
-        var paged = await bookService.GetByCategoryIdAsync(categoryId, pagination.Page, pagination.PageSize, cancellationToken);
+        var paged = await bookService.GetByCategoryIdAsync(categoryId, pagination.Page, pagination.PageSize, pagination.OrderBy, pagination.OrderType, cancellationToken);
 
         return Ok(new PagedList<BookDto>
         {

@@ -13,7 +13,12 @@ public class ReviewRepository : Repository<Review>, IReviewRepository
     {
     }
 
-    public Task<PagedList<Review>> GetByBookIdPagedAsync(int bookId, int page, int pageSize, Func<IQueryable<Review>, IOrderedQueryable<Review>>? orderBy = null, CancellationToken cancellationToken = default)
+    public Task<PagedList<Review>> GetByBookIdPagedAsync(
+        int bookId, 
+        int page, 
+        int pageSize, 
+        Func<IQueryable<Review>, IOrderedQueryable<Review>>? orderBy = null, 
+        CancellationToken cancellationToken = default)
     {
         return FindPagedAsync(r => r.BookId == bookId, page, pageSize, orderBy, cancellationToken);
     } 

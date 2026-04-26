@@ -9,6 +9,29 @@ namespace OnlineLibrary.Api.Extensions;
 
 public static class ServiceCollectionExtensions
 {
+    public static IMvcBuilder AddJsonDefaults(this IMvcBuilder builder)
+    {
+        return builder.AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+            options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+        });
+    }
+
+    public static IServiceCollection AddDefaultCors(this IServiceCollection services)
+    {
+        return services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(policy =>
+            {
+                policy
+                    .WithOrigins("http://localhost:5173", "https://localhost:5173")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+            });
+        });
+    }
+
     public static IServiceCollection ConfigureSettings(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<JwtSettings>(configuration.GetSection("Jwt"));

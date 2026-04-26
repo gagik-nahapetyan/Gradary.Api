@@ -13,7 +13,7 @@ public class BookService(IBookRepository bookRepository, ICategoryRepository cat
 {
     public async Task<BookModel> CreateAsync(BookModel bookModel, CancellationToken cancellationToken = default)
     {
-        var bookWithTitleExists = await bookRepository.ExistAsync(b => string.Equals(b.Title, bookModel.Title, StringComparison.OrdinalIgnoreCase), cancellationToken);
+        var bookWithTitleExists = await bookRepository.ExistAsync(b => b.Title.ToLower() == bookModel.Title.ToLower(), cancellationToken);
         if (bookWithTitleExists)
             throw new ArgumentException($"Book with title {bookModel.Title} already exists");
 
@@ -31,7 +31,7 @@ public class BookService(IBookRepository bookRepository, ICategoryRepository cat
         if (!bookExists)
             throw new KeyNotFoundException($"Book with id {bookModel.Id} not found");
 
-        var bookWithSameTitleExists = await bookRepository.ExistAsync(b => b.Id != bookModel.Id && string.Equals(b.Title, bookModel.Title, StringComparison.OrdinalIgnoreCase), cancellationToken);
+        var bookWithSameTitleExists = await bookRepository.ExistAsync(b => b.Id != bookModel.Id && b.Title.ToLower() == bookModel.Title.ToLower(), cancellationToken);
         if (bookWithSameTitleExists)
             throw new ArgumentException($"Book with title {bookModel.Title} already exists");
 

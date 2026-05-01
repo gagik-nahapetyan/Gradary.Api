@@ -43,6 +43,23 @@ public interface IAuthorService
     Task UpdateAsync(AuthorModel model, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Uploads or replaces the photo for an author.
+    /// </summary>
+    /// <param name="id">The id of the author.</param>
+    /// <param name="contentType">The MIME type of the image (e.g. image/jpeg).</param>
+    /// <param name="openStream">A delegate that opens the image stream when invoked.</param>
+    /// <param name="cancellationToken">The token to cancel the operation.</param>
+    Task UploadImageAsync(int id, string contentType, Func<Stream> openStream, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Downloads the photo for an author.
+    /// </summary>
+    /// <param name="id">The id of the author.</param>
+    /// <param name="cancellationToken">The token to cancel the operation.</param>
+    /// <returns>The image stream and its MIME content type.</returns>
+    Task<(Stream stream, string contentType)> GetImageAsync(int id, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Soft-deletes an author by id.
     /// </summary>
     /// <param name="id">The id of the author.</param>

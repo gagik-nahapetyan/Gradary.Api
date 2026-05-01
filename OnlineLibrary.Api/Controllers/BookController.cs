@@ -87,6 +87,52 @@ public class BookController(IBookService bookService, IOptions<FileUploadSetting
         return NoContent();
     }
 
+    /// <summary>Uploads or replaces the cover image for a book.</summary>
+    /// <param name="id">The id of the book.</param>
+    /// <param name="file">The image file (JPEG, PNG, WebP, or GIF).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="204">Image uploaded successfully.</response>
+    /// <response code="400">If the file is missing, empty, too large, or not a supported image type.</response>
+    /// <response code="404">If the book was not found.</response>
+    /// <response code="500">If an unexpected error occurred.</response>
+    [HttpPost("{id:int:min(1)}/image")]
+    [Authorize(Roles = "Admin,Librarian")]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> UploadImage(int id, [Required] IFormFile file, CancellationToken cancellationToken)
+    {
+        if (file.Length == 0)
+            return BadRequest("Image must not be empty.");
+
+        if (file.Length > fileUploadSettings.MaxImageSizeBytes)
+            return BadRequest($"Image size must not exceed {fileUploadSettings.MaxImageSizeBytes / (1024 * 1024)} MB.");
+
+        await bookService.UploadImageAsync(id, file.ContentType, file.OpenReadStream, cancellationToken);
+
+        return NoContent();
+    }
+
+    /// <summary>Gets the cover image for a book.</summary>
+    /// <param name="id">The id of the book.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">Returns the image file.</response>
+    /// <response code="404">If the book or its image was not found.</response>
+    /// <response code="500">If an unexpected error occurred.</response>
+    [HttpGet("{id:int:min(1)}/image")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetImage(int id, CancellationToken cancellationToken)
+    {
+        var (stream, contentType) = await bookService.GetImageAsync(id, cancellationToken);
+        
+        return File(stream, contentType);
+    }
+
     /// <summary>Gets a book by id.</summary>
     /// <param name="id">The id of the book.</param>
     /// <param name="cancellationToken">Cancellation token.</param>

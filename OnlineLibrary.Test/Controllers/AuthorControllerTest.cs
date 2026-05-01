@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Moq;
 using OnlineLibrary.Api.Controllers;
 using OnlineLibrary.Api.Dtos;
@@ -6,6 +7,7 @@ using OnlineLibrary.Api.Dtos.Author;
 using OnlineLibrary.Application.Abstractions.Services;
 using OnlineLibrary.Domain.Enums;
 using OnlineLibrary.Domain.Models;
+using OnlineLibrary.Domain.Settings;
 
 namespace OnlineLibrary.Test.Controllers;
 
@@ -17,7 +19,8 @@ public class AuthorControllerTests
     public AuthorControllerTests()
     {
         _mockAuthorService = new Mock<IAuthorService>();
-        _controller = new AuthorController(_mockAuthorService.Object);
+        var fileUploadOptions = Options.Create(new FileUploadSettings { MaxFileSizeBytes = 26214400, MaxImageSizeBytes = 5242880 });
+        _controller = new AuthorController(_mockAuthorService.Object, fileUploadOptions);
     }
 
     [Fact]

@@ -29,4 +29,7 @@ public class BookModel : AuditModel
     /// The description of the book.
     /// </summary>
     public string? Description { get; set; }
+
+    /// <summary>URL to the cover image, or null if no image has been uploaded.</summary>
+    public string? ImageUrl { get; set; }
 }

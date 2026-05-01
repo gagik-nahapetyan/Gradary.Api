@@ -1,5 +1,6 @@
 using OnlineLibrary.Application.Abstractions.Repositories;
 using OnlineLibrary.Application.Abstractions.Services;
+using OnlineLibrary.Application.Helpers;
 using OnlineLibrary.Domain.Entities;
 using OnlineLibrary.Domain.Enums;
 using OnlineLibrary.Domain.Models;
@@ -9,7 +10,9 @@ namespace OnlineLibrary.Application.Services;
 /// <summary>
 /// Represents an <see cref="AuthorService"/>.
 /// </summary>
-public class AuthorService(IAuthorRepository authorRepository) : IAuthorService
+public class AuthorService(
+    IAuthorRepository authorRepository,
+    IFileStorageService fileStorage) : IAuthorService
 {
     public async Task<AuthorModel> CreateAsync(AuthorModel authorModel, CancellationToken cancellationToken = default)
     {
@@ -37,9 +40,13 @@ public class AuthorService(IAuthorRepository authorRepository) : IAuthorService
     {
         var paged = await authorRepository.GetPagedAsync(page, pageSize, BuildOrderBy(orderBy, orderType), cancellationToken);
 
+        var items = new List<AuthorModel>(paged.Items.Count);
+        foreach (var author in paged.Items)
+            items.Add(await ToModelWithImageAsync(author, cancellationToken));
+
         return new PagedList<AuthorModel>
         {
-            Items = paged.Items.Select(a => a.ToModel()).ToList(),
+            Items = items,
             TotalCount = paged.TotalCount,
             CurrentPage = paged.CurrentPage,
             PageSize = paged.PageSize
@@ -52,9 +59,37 @@ public class AuthorService(IAuthorRepository authorRepository) : IAuthorService
         if (author is null)
             throw new KeyNotFoundException($"Author with id {id} not found");
 
-        var authorModel = author.ToModel();
+        return await ToModelWithImageAsync(author, cancellationToken);
+    }
 
-        return authorModel;
+    public async Task UploadImageAsync(int id, string contentType, Func<Stream> openStream, CancellationToken cancellationToken = default)
+    {
+        if (!ImageContentTypes.Supported.Contains(contentType.ToLowerInvariant()))
+            throw new ArgumentException($"Unsupported image content type: {contentType}");
+
+        var authorExists = await authorRepository.ExistAsync(a => a.Id == id, cancellationToken);
+        if (!authorExists)
+            throw new KeyNotFoundException($"Author with id {id} not found");
+
+        await fileStorage.DeleteByPrefixAsync($"author-images/{id}", cancellationToken);
+
+        var ext = ImageContentTypes.GetExtension(contentType);
+        using var stream = openStream();
+        await fileStorage.UploadAsync($"author-images/{id}{ext}", stream, contentType, cancellationToken);
+    }
+
+    public async Task<(Stream stream, string contentType)> GetImageAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var authorExists = await authorRepository.ExistAsync(a => a.Id == id, cancellationToken);
+        if (!authorExists)
+            throw new KeyNotFoundException($"Author with id {id} not found");
+
+        var key = await fileStorage.FindKeyByPrefixAsync($"author-images/{id}", cancellationToken);
+        if (key is null)
+            throw new KeyNotFoundException($"No image found for author {id}");
+
+        var result = await fileStorage.DownloadAsync(key, cancellationToken);
+        return result!.Value;
     }
 
     public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
@@ -65,6 +100,14 @@ public class AuthorService(IAuthorRepository authorRepository) : IAuthorService
 
         authorRepository.Delete(author);
         await authorRepository.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task<AuthorModel> ToModelWithImageAsync(Author author, CancellationToken ct)
+    {
+        var model = author.ToModel();
+        var key = await fileStorage.FindKeyByPrefixAsync($"author-images/{model.Id}", ct);
+        model.ImageUrl = key is not null ? $"/api/authors/{model.Id}/image" : null;
+        return model;
     }
 
     private static Func<IQueryable<Author>, IOrderedQueryable<Author>> BuildOrderBy(string? orderBy, OrderType orderType) =>

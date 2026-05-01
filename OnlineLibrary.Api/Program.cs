@@ -23,6 +23,7 @@ builder.Services.AddScoped<AuditInterceptor>();
 builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddServices();
 builder.Services.AddRepositories();
+builder.Services.AddFileStorage();
 
 var app = builder.Build();
 

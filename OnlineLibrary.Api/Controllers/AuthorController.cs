@@ -1,9 +1,12 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using OnlineLibrary.Api.Dtos;
 using OnlineLibrary.Api.Dtos.Author;
 using OnlineLibrary.Application.Abstractions.Services;
 using OnlineLibrary.Domain.Models;
+using OnlineLibrary.Domain.Settings;
 
 namespace OnlineLibrary.Api.Controllers;
 
@@ -11,8 +14,10 @@ namespace OnlineLibrary.Api.Controllers;
 [ApiController]
 [Authorize]
 [Produces("application/json")]
-public class AuthorController(IAuthorService authorService) : ControllerBase
+public class AuthorController(IAuthorService authorService, IOptions<FileUploadSettings> fileUploadSettingsOptions) : ControllerBase
 {
+    private readonly FileUploadSettings fileUploadSettings = fileUploadSettingsOptions.Value;
+
     /// <summary>Creates a new author.</summary>
     /// <param name="input">The author details.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -95,6 +100,51 @@ public class AuthorController(IAuthorService authorService) : ControllerBase
             CurrentPage = paged.CurrentPage,
             PageSize = paged.PageSize
         });
+    }
+
+    /// <summary>Uploads or replaces the photo for an author.</summary>
+    /// <param name="id">The id of the author.</param>
+    /// <param name="file">The image file (JPEG, PNG, WebP, or GIF).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="204">Image uploaded successfully.</response>
+    /// <response code="400">If the file is missing, empty, too large, or not a supported image type.</response>
+    /// <response code="404">If the author was not found.</response>
+    /// <response code="500">If an unexpected error occurred.</response>
+    [HttpPost("{id:int:min(1)}/image")]
+    [Authorize(Roles = "Admin,Librarian")]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> UploadImage(int id, [Required] IFormFile file, CancellationToken cancellationToken)
+    {
+        if (file.Length == 0)
+            return BadRequest("Image must not be empty.");
+
+        if (file.Length > fileUploadSettings.MaxImageSizeBytes)
+            return BadRequest($"Image size must not exceed {fileUploadSettings.MaxImageSizeBytes / (1024 * 1024)} MB.");
+
+        await authorService.UploadImageAsync(id, file.ContentType, file.OpenReadStream, cancellationToken);
+
+        return NoContent();
+    }
+
+    /// <summary>Gets the photo for an author.</summary>
+    /// <param name="id">The id of the author.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">Returns the image file.</response>
+    /// <response code="404">If the author or their photo was not found.</response>
+    /// <response code="500">If an unexpected error occurred.</response>
+    [HttpGet("{id:int:min(1)}/image")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetImage(int id, CancellationToken cancellationToken)
+    {
+        var (stream, contentType) = await authorService.GetImageAsync(id, cancellationToken);
+        return File(stream, contentType);
     }
 
     /// <summary>Soft-deletes an author by id.</summary>

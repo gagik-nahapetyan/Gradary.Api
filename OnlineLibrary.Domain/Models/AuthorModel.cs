@@ -14,4 +14,7 @@ public class AuthorModel : AuditModel
     /// The biography of the author.
     /// </summary>
     public string? Biography { get; set; }
+
+    /// <summary>URL to the author's photo, or null if no image has been uploaded.</summary>
+    public string? ImageUrl { get; set; }
 }

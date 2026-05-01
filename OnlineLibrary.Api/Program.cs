@@ -10,7 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonDefaults();
+builder.Services.AddDefaultCors();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerWithJwt();
 builder.Services.ConfigureSettings(builder.Configuration);
@@ -22,6 +23,7 @@ builder.Services.AddScoped<AuditInterceptor>();
 builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddServices();
 builder.Services.AddRepositories();
+builder.Services.AddFileStorage();
 
 var app = builder.Build();
 
@@ -33,6 +35,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseExceptionHandler();
 app.UseHttpsRedirection();
+app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

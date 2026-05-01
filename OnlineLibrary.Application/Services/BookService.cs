@@ -1,5 +1,6 @@
 using OnlineLibrary.Application.Abstractions.Repositories;
 using OnlineLibrary.Application.Abstractions.Services;
+using OnlineLibrary.Application.Helpers;
 using OnlineLibrary.Domain.Entities;
 using OnlineLibrary.Domain.Enums;
 using OnlineLibrary.Domain.Models;
@@ -9,11 +10,14 @@ namespace OnlineLibrary.Application.Services;
 /// <summary>
 /// Represents a <see cref="BookService"/>.
 /// </summary>
-public class BookService(IBookRepository bookRepository, ICategoryRepository categoryRepository) : IBookService
+public class BookService(
+    IBookRepository bookRepository,
+    ICategoryRepository categoryRepository,
+    IFileStorageService fileStorage) : IBookService
 {
     public async Task<BookModel> CreateAsync(BookModel bookModel, CancellationToken cancellationToken = default)
     {
-        var bookWithTitleExists = await bookRepository.ExistAsync(b => string.Equals(b.Title, bookModel.Title, StringComparison.OrdinalIgnoreCase), cancellationToken);
+        var bookWithTitleExists = await bookRepository.ExistAsync(b => b.Title.ToLower() == bookModel.Title.ToLower(), cancellationToken);
         if (bookWithTitleExists)
             throw new ArgumentException($"Book with title {bookModel.Title} already exists");
 
@@ -31,7 +35,7 @@ public class BookService(IBookRepository bookRepository, ICategoryRepository cat
         if (!bookExists)
             throw new KeyNotFoundException($"Book with id {bookModel.Id} not found");
 
-        var bookWithSameTitleExists = await bookRepository.ExistAsync(b => b.Id != bookModel.Id && string.Equals(b.Title, bookModel.Title, StringComparison.OrdinalIgnoreCase), cancellationToken);
+        var bookWithSameTitleExists = await bookRepository.ExistAsync(b => b.Id != bookModel.Id && b.Title.ToLower() == bookModel.Title.ToLower(), cancellationToken);
         if (bookWithSameTitleExists)
             throw new ArgumentException($"Book with title {bookModel.Title} already exists");
 
@@ -47,14 +51,40 @@ public class BookService(IBookRepository bookRepository, ICategoryRepository cat
         if (!bookExists)
             throw new KeyNotFoundException($"Book with id {id} not found");
 
-        var directory = $"{Directory.GetParent(Environment.CurrentDirectory)!.FullName}\\BookFiles";
-        if (!Directory.Exists(directory))
-            Directory.CreateDirectory(directory);
+        await fileStorage.DeleteByPrefixAsync($"book-files/{id}", cancellationToken);
 
-        var fullPath = $"{directory}\\{id}";
         using var stream = openStream();
-        using var fileStream = new FileStream(fullPath, FileMode.Create);
-        await stream.CopyToAsync(fileStream, cancellationToken);
+        await fileStorage.UploadAsync($"book-files/{id}", stream, "application/octet-stream", cancellationToken);
+    }
+
+    public async Task UploadImageAsync(int id, string contentType, Func<Stream> openStream, CancellationToken cancellationToken = default)
+    {
+        if (!ImageContentTypes.Supported.Contains(contentType.ToLowerInvariant()))
+            throw new ArgumentException($"Unsupported image content type: {contentType}");
+
+        var bookExists = await bookRepository.ExistAsync(b => b.Id == id, cancellationToken);
+        if (!bookExists)
+            throw new KeyNotFoundException($"Book with id {id} not found");
+
+        await fileStorage.DeleteByPrefixAsync($"book-images/{id}", cancellationToken);
+
+        var ext = ImageContentTypes.GetExtension(contentType);
+        using var stream = openStream();
+        await fileStorage.UploadAsync($"book-images/{id}{ext}", stream, contentType, cancellationToken);
+    }
+
+    public async Task<(Stream stream, string contentType)> GetImageAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var bookExists = await bookRepository.ExistAsync(b => b.Id == id, cancellationToken);
+        if (!bookExists)
+            throw new KeyNotFoundException($"Book with id {id} not found");
+
+        var key = await fileStorage.FindKeyByPrefixAsync($"book-images/{id}", cancellationToken);
+        if (key is null)
+            throw new KeyNotFoundException($"No image found for book {id}");
+
+        var result = await fileStorage.DownloadAsync(key, cancellationToken);
+        return result!.Value;
     }
 
     public async Task<BookModel> GetByIdAsync(int id, CancellationToken cancellationToken = default)
@@ -63,16 +93,20 @@ public class BookService(IBookRepository bookRepository, ICategoryRepository cat
         if (book is null)
             throw new KeyNotFoundException($"Book with id {id} not found");
 
-        return book.ToModel();
+        return await ToModelWithImageAsync(book, cancellationToken);
     }
 
     public async Task<PagedList<BookModel>> GetAsync(int page, int pageSize, string? orderBy = null, OrderType orderType = OrderType.Asc, CancellationToken cancellationToken = default)
     {
         var paged = await bookRepository.GetPagedAsync(page, pageSize, BuildOrderBy(orderBy, orderType), cancellationToken);
 
+        var items = new List<BookModel>(paged.Items.Count);
+        foreach (var book in paged.Items)
+            items.Add(await ToModelWithImageAsync(book, cancellationToken));
+
         return new PagedList<BookModel>
         {
-            Items = paged.Items.Select(b => b.ToModel()).ToList(),
+            Items = items,
             TotalCount = paged.TotalCount,
             CurrentPage = paged.CurrentPage,
             PageSize = paged.PageSize
@@ -87,13 +121,35 @@ public class BookService(IBookRepository bookRepository, ICategoryRepository cat
 
         var paged = await bookRepository.FindPagedAsync(b => b.CategoryId == categoryId, page, pageSize, BuildOrderBy(orderBy, orderType), cancellationToken);
 
+        var items = new List<BookModel>(paged.Items.Count);
+        foreach (var book in paged.Items)
+            items.Add(await ToModelWithImageAsync(book, cancellationToken));
+
         return new PagedList<BookModel>
         {
-            Items = paged.Items.Select(b => b.ToModel()).ToList(),
+            Items = items,
             TotalCount = paged.TotalCount,
             CurrentPage = paged.CurrentPage,
             PageSize = paged.PageSize
         };
+    }
+
+    public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var book = await bookRepository.GetByIdAsync(id, cancellationToken);
+        if (book is null)
+            throw new KeyNotFoundException($"Book with id {id} not found");
+
+        bookRepository.Delete(book);
+        await bookRepository.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task<BookModel> ToModelWithImageAsync(Book book, CancellationToken ct)
+    {
+        var model = book.ToModel();
+        var key = await fileStorage.FindKeyByPrefixAsync($"book-images/{model.Id}", ct);
+        model.ImageUrl = key is not null ? $"/api/books/{model.Id}/image" : null;
+        return model;
     }
 
     private static Func<IQueryable<Book>, IOrderedQueryable<Book>> BuildOrderBy(string? orderBy, OrderType orderType) =>
@@ -107,13 +163,4 @@ public class BookService(IBookRepository bookRepository, ICategoryRepository cat
                 : q => q.OrderBy(b => b.Title)
         };
 
-    public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
-    {
-        var book = await bookRepository.GetByIdAsync(id, cancellationToken);
-        if (book is null)
-            throw new KeyNotFoundException($"Book with id {id} not found");
-
-        bookRepository.Delete(book);
-        await bookRepository.SaveChangesAsync(cancellationToken);
-    }
 }

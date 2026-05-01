@@ -47,7 +47,8 @@ public static class CustomMapper
             Subtitle = model.Subtitle,
             AuthorId = model.AuthorId,
             CategoryId = model.CategoryId,
-            Description = model.Description
+            Description = model.Description,
+            ImageUrl = model.ImageUrl
         };
     }
 
@@ -78,7 +79,8 @@ public static class CustomMapper
         {
             Id = model.Id,
             FullName = model.FullName,
-            Biography = model.Biography
+            Biography = model.Biography,
+            ImageUrl = model.ImageUrl
         };
     }
 

@@ -2,8 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OnlineLibrary.Application.Abstractions.Repositories;
+using OnlineLibrary.Application.Abstractions.Services;
 using OnlineLibrary.Persistence.Interceptors;
 using OnlineLibrary.Persistence.Repositories;
+using OnlineLibrary.Persistence.Services;
 
 namespace OnlineLibrary.Persistence.Extensions;
 
@@ -24,6 +26,13 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<AuditInterceptor>();
 
+        return services;
+    }
+
+    public static IServiceCollection AddFileStorage(this IServiceCollection services)
+    {
+        services.AddScoped<IFileStorageService, LocalFileStorageService>();
+        
         return services;
     }
 

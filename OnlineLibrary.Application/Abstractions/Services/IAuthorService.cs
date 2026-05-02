@@ -60,6 +60,13 @@ public interface IAuthorService
     Task<(Stream stream, string contentType)> GetImageAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Returns true if an author with the given id exists.
+    /// </summary>
+    /// <param name="id">The id of the author.</param>
+    /// <param name="cancellationToken">The token to cancel the operation.</param>
+    Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Soft-deletes an author by id.
     /// </summary>
     /// <param name="id">The id of the author.</param>

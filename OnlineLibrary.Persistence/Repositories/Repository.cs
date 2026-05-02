@@ -36,7 +36,7 @@ public class Repository<TEntity> : IRepository<TEntity>
         DbSet.Update(entity);
     }
 
-    public async Task<TEntity?> GetByIdAsync(int id, CancellationToken cancellationToken = default, bool includeDeleted = false)
+    public virtual async Task<TEntity?> GetByIdAsync(int id, CancellationToken cancellationToken = default, bool includeDeleted = false)
     {
         var query = includeDeleted ? DbSet.IgnoreQueryFilters() : DbSet.AsQueryable();
 
@@ -71,7 +71,7 @@ public class Repository<TEntity> : IRepository<TEntity>
         return await query.CountAsync(predicate, cancellationToken);
     }
 
-    public Task<PagedList<TEntity>> GetPagedAsync(
+    public virtual Task<PagedList<TEntity>> GetPagedAsync(
         int page, 
         int pageSize, 
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null, 
@@ -82,7 +82,7 @@ public class Repository<TEntity> : IRepository<TEntity>
         return query.ToPagedListAsync(page, pageSize, orderBy, cancellationToken);
     }
 
-    public Task<PagedList<TEntity>> FindPagedAsync(
+    public virtual Task<PagedList<TEntity>> FindPagedAsync(
         Expression<Func<TEntity, bool>> predicate, 
         int page, 
         int pageSize, 

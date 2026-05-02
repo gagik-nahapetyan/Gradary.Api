@@ -53,6 +53,23 @@ public static class CustomMapper
     }
 
     /// <summary>
+    /// Maps <see cref="BookModel"/> to <see cref="BookListDto"/>.
+    /// </summary>
+    /// <param name="model">The provided object to map from.</param>
+    /// <returns>The book list dto.</returns>
+    public static BookListDto ToListDto(this BookModel model)
+    {
+        return new BookListDto
+        {
+            Id = model.Id,
+            Title = model.Title,
+            AuthorName = model.AuthorName,
+            CategoryName = model.CategoryName,
+            ImageUrl = model.ImageUrl
+        };
+    }
+
+    /// <summary>
     /// Maps <see cref="AuthorRequest"/> to <see cref="AuthorModel"/>.
     /// </summary>
     /// <param name="dto">The request to map from.</param>

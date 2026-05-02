@@ -92,6 +92,11 @@ public class AuthorService(
         return result!.Value;
     }
 
+    public Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return authorRepository.ExistAsync(a => a.Id == id, cancellationToken);
+    }
+
     public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
         var author = await authorRepository.GetByIdAsync(id, cancellationToken);

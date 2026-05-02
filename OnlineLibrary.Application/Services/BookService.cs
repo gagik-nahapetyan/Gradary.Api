@@ -13,6 +13,7 @@ namespace OnlineLibrary.Application.Services;
 public class BookService(
     IBookRepository bookRepository,
     ICategoryRepository categoryRepository,
+    IAuthorRepository authorRepository,
     IFileStorageService fileStorage) : IBookService
 {
     public async Task<BookModel> CreateAsync(BookModel bookModel, CancellationToken cancellationToken = default)
@@ -120,6 +121,27 @@ public class BookService(
             throw new KeyNotFoundException($"Category with id {categoryId} not found");
 
         var paged = await bookRepository.FindPagedAsync(b => b.CategoryId == categoryId, page, pageSize, BuildOrderBy(orderBy, orderType), cancellationToken);
+
+        var items = new List<BookModel>(paged.Items.Count);
+        foreach (var book in paged.Items)
+            items.Add(await ToModelWithImageAsync(book, cancellationToken));
+
+        return new PagedList<BookModel>
+        {
+            Items = items,
+            TotalCount = paged.TotalCount,
+            CurrentPage = paged.CurrentPage,
+            PageSize = paged.PageSize
+        };
+    }
+
+    public async Task<PagedList<BookModel>> GetByAuthorIdAsync(int authorId, int page, int pageSize, string? orderBy = null, OrderType orderType = OrderType.Asc, CancellationToken cancellationToken = default)
+    {
+        var authorExists = await authorRepository.ExistAsync(a => a.Id == authorId, cancellationToken);
+        if (!authorExists)
+            throw new KeyNotFoundException($"Author with id {authorId} not found");
+
+        var paged = await bookRepository.FindPagedAsync(b => b.AuthorId == authorId, page, pageSize, BuildOrderBy(orderBy, orderType), cancellationToken);
 
         var items = new List<BookModel>(paged.Items.Count);
         foreach (var book in paged.Items)

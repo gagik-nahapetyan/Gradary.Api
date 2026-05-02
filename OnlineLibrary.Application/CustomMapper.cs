@@ -20,14 +20,16 @@ public static class CustomMapper
 
     public static BookModel ToModel(this Book entity)
     {
-        return new BookModel 
-        { 
+        return new BookModel
+        {
             Id = entity.Id,
             Title = entity.Title,
             Subtitle = entity.Subtitle,
             Description = entity.Description,
             AuthorId = entity.AuthorId,
-            CategoryId = entity.CategoryId
+            AuthorName = entity.Author?.FullName,
+            CategoryId = entity.CategoryId,
+            CategoryName = entity.Category?.Name
         };
     }
 

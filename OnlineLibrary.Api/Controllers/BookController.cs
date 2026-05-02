@@ -160,16 +160,16 @@ public class BookController(IBookService bookService, IOptions<FileUploadSetting
     /// <response code="500">If an unexpected error occurred.</response>
     [HttpGet]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(PagedList<BookDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PagedList<BookListDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Get([FromQuery] PagedRequest pagination, CancellationToken cancellationToken = default)
     {
         var paged = await bookService.GetAsync(pagination.Page, pagination.PageSize, pagination.OrderBy, pagination.OrderType, cancellationToken);
 
-        return Ok(new PagedList<BookDto>
+        return Ok(new PagedList<BookListDto>
         {
-            Items = [.. paged.Items.Select(b => b.ToDto())],
+            Items = [.. paged.Items.Select(b => b.ToListDto())],
             TotalCount = paged.TotalCount,
             CurrentPage = paged.CurrentPage,
             PageSize = paged.PageSize
@@ -186,20 +186,50 @@ public class BookController(IBookService bookService, IOptions<FileUploadSetting
     /// <response code="500">If an unexpected error occurred.</response>
     [HttpGet("category/{categoryId:int:min(1)}")]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(PagedList<BookDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PagedList<BookListDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetByCategoryId(
-        int categoryId, 
-        [FromQuery] PagedRequest pagination, 
+        int categoryId,
+        [FromQuery] PagedRequest pagination,
         CancellationToken cancellationToken = default)
     {
         var paged = await bookService.GetByCategoryIdAsync(categoryId, pagination.Page, pagination.PageSize, pagination.OrderBy, pagination.OrderType, cancellationToken);
 
-        return Ok(new PagedList<BookDto>
+        return Ok(new PagedList<BookListDto>
         {
-            Items = [.. paged.Items.Select(b => b.ToDto())],
+            Items = [.. paged.Items.Select(b => b.ToListDto())],
+            TotalCount = paged.TotalCount,
+            CurrentPage = paged.CurrentPage,
+            PageSize = paged.PageSize
+        });
+    }
+
+    /// <summary>Gets a paginated list of books by an author.</summary>
+    /// <param name="authorId">The id of the author.</param>
+    /// <param name="pagination">The pagination parameters.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">Returns the paginated list of books.</response>
+    /// <response code="400">If the pagination parameters are invalid.</response>
+    /// <response code="404">If the author was not found.</response>
+    /// <response code="500">If an unexpected error occurred.</response>
+    [HttpGet("author/{authorId:int:min(1)}")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(PagedList<BookListDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetByAuthorId(
+        int authorId,
+        [FromQuery] PagedRequest pagination,
+        CancellationToken cancellationToken = default)
+    {
+        var paged = await bookService.GetByAuthorIdAsync(authorId, pagination.Page, pagination.PageSize, pagination.OrderBy, pagination.OrderType, cancellationToken);
+
+        return Ok(new PagedList<BookListDto>
+        {
+            Items = [.. paged.Items.Select(b => b.ToListDto())],
             TotalCount = paged.TotalCount,
             CurrentPage = paged.CurrentPage,
             PageSize = paged.PageSize

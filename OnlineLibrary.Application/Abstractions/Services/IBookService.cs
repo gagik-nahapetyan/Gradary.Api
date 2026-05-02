@@ -57,6 +57,18 @@ public interface IBookService
     Task<PagedList<BookModel>> GetByCategoryIdAsync(int categoryId, int page, int pageSize, string? orderBy = null, OrderType orderType = OrderType.Asc, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves a paginated list of books written by the given author.
+    /// </summary>
+    /// <param name="authorId">The id of the author.</param>
+    /// <param name="page">The page number, starting at 1.</param>
+    /// <param name="pageSize">The number of items per page.</param>
+    /// <param name="orderBy">The field to sort by: "title", "created". Defaults to "title".</param>
+    /// <param name="orderType">The sort direction.</param>
+    /// <param name="cancellationToken">The token to cancel the operation.</param>
+    /// <returns>Task representing an asynchronous operation, wrapping the paged list of book models.</returns>
+    Task<PagedList<BookModel>> GetByAuthorIdAsync(int authorId, int page, int pageSize, string? orderBy = null, OrderType orderType = OrderType.Asc, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Uploads the file for a book.
     /// </summary>
     /// <param name="id">The id of the book.</param>

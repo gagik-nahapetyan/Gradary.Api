@@ -26,9 +26,19 @@ public class BookDto
     public required int AuthorId { get; set; }
 
     /// <summary>
+    /// The name of the author.
+    /// </summary>
+    public string? AuthorName { get; set; }
+
+    /// <summary>
     /// The category id of the book.
     /// </summary>
     public required int CategoryId { get; set; }
+
+    /// <summary>
+    /// The name of the category.
+    /// </summary>
+    public string? CategoryName { get; set; }
 
     /// <summary>
     /// The description of the book.

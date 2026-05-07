@@ -46,7 +46,9 @@ public static class CustomMapper
             Title = model.Title,
             Subtitle = model.Subtitle,
             AuthorId = model.AuthorId,
+            AuthorName = model.AuthorName,
             CategoryId = model.CategoryId,
+            CategoryName = model.CategoryName,
             Description = model.Description,
             ImageUrl = model.ImageUrl
         };
@@ -275,6 +277,7 @@ public static class CustomMapper
         {
             Id = model.Id,
             BookId = model.BookId,
+            BookTitle = model.BookTitle,
             Status = model.Status,
             Position = model.Position
         };

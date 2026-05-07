@@ -17,14 +17,14 @@ public class BookCollectionRepository : Repository<BookCollection>, IBookCollect
     {
         return await DbSet
             .Where(c => c.UserId == userId)
-            .Include(c => c.Items)
+            .Include(c => c.Items).ThenInclude(i => i.Book)
             .ToListAsync(cancellationToken);
     }
 
     public async Task<BookCollection?> GetByIdWithItemsAsync(int id, CancellationToken cancellationToken = default)
     {
         return await DbSet
-            .Include(c => c.Items)
+            .Include(c => c.Items).ThenInclude(i => i.Book)
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
     }
 }

@@ -9,6 +9,7 @@ public class BookCollectionItemDto
 {
     public int Id { get; set; }
     public int BookId { get; set; }
+    public string? BookTitle { get; set; }
     public BookCollectionItemStatus Status { get; set; }
     public int Position { get; set; }
 }

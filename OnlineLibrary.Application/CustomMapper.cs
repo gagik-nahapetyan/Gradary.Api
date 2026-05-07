@@ -175,6 +175,7 @@ public static class CustomMapper
             Id = entity.Id,
             BookCollectionId = entity.BookCollectionId,
             BookId = entity.BookId,
+            BookTitle = entity.Book?.Title,
             Status = entity.Status,
             Position = entity.Position
         };

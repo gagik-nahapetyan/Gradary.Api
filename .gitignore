@@ -364,3 +364,6 @@ FodyWeavers.xsd
 
 # Local file storage
 LocalStorage/
+
+# OmniSharp cache files
+*.lscache

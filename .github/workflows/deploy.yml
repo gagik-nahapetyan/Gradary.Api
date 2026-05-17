@@ -26,7 +26,7 @@ jobs:
               with:
                 registry: ghcr.io
                 username: ${{ github.actor }}
-                password: ${{ secrets.PAT }}
+                password: ${{ secrets.GHCR_PAT }}
             - name: Build and push Docker image
               uses: docker/build-push-action@v7
               with:
@@ -41,5 +41,5 @@ jobs:
                 imageToDeploy: ghcr.io/gagik-nahapetyan/gradary.api:latest
                 registryUrl: ghcr.io
                 registryUsername: ${{ github.actor }}
-                registryPassword: ${{ secrets.PAT }}
+                registryPassword: ${{ secrets.GHCR_PAT }}
                 azureCredentials: ${{ secrets.AZURE_CREDENTIALS }}                

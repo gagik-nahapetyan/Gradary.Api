@@ -315,7 +315,7 @@ public class BookControllerTests
 
         // assert
         var okResponse = Assert.IsType<OkObjectResult>(result);
-        var response = Assert.IsType<PagedList<BookDto>>(okResponse.Value);
+        var response = Assert.IsType<PagedList<BookListDto>>(okResponse.Value);
 
         Assert.Equal(2, response.Items.Count);
         Assert.Equal(pagedBooks.TotalCount, response.TotalCount);
@@ -345,7 +345,7 @@ public class BookControllerTests
 
         // assert
         var okResponse = Assert.IsType<OkObjectResult>(result);
-        var response = Assert.IsType<PagedList<BookDto>>(okResponse.Value);
+        var response = Assert.IsType<PagedList<BookListDto>>(okResponse.Value);
 
         Assert.Empty(response.Items);
         Assert.Equal(0, response.TotalCount);
@@ -384,10 +384,9 @@ public class BookControllerTests
 
         // assert
         var okResponse = Assert.IsType<OkObjectResult>(result);
-        var response = Assert.IsType<PagedList<BookDto>>(okResponse.Value);
+        var response = Assert.IsType<PagedList<BookListDto>>(okResponse.Value);
 
         Assert.Equal(pagedBooks.Items.Count, response.Items.Count);
-        Assert.All(response.Items, dto => Assert.Equal(categoryId, dto.CategoryId));
 
         _mockBookService.Verify(s => s.GetByCategoryIdAsync(categoryId, page, pageSize, It.IsAny<string?>(), It.IsAny<OrderType>(), It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -411,7 +410,7 @@ public class BookControllerTests
 
         // assert
         var okResponse = Assert.IsType<OkObjectResult>(result);
-        var response = Assert.IsType<PagedList<BookDto>>(okResponse.Value);
+        var response = Assert.IsType<PagedList<BookListDto>>(okResponse.Value);
 
         Assert.Empty(response.Items);
 

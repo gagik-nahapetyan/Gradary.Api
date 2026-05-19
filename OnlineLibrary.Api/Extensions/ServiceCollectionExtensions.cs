@@ -18,14 +18,16 @@ public static class ServiceCollectionExtensions
         });
     }
 
-    public static IServiceCollection AddDefaultCors(this IServiceCollection services)
+    public static IServiceCollection AddDefaultCors(this IServiceCollection services, IConfiguration configuration)
     {
+        var allowedOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+
         return services.AddCors(options =>
         {
             options.AddDefaultPolicy(policy =>
             {
                 policy
-                    .WithOrigins("http://localhost:5173", "https://localhost:5173")
+                    .WithOrigins(allowedOrigins)
                     .AllowAnyHeader()
                     .AllowAnyMethod();
             });

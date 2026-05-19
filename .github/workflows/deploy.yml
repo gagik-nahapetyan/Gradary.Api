@@ -1,48 +1,49 @@
 name: Build and Deploy
 
 on:
-    push:
-        branches:
-            - main
+  push:
+    branches:
+      - main
 
 permissions:
   contents: read
   packages: write
 
 jobs:
-    build-and-deploy:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v6
-            - name: Setup .NET
-              uses: actions/setup-dotnet@v5
-              with:
-                dotnet-version: '8.0.x'
-            - name: Run unit tests
-              run: dotnet test OnlineLibrary.Test/OnlineLibrary.Test.csproj
-            - name: Log in to GitHub Container Registry
-              uses: docker/login-action@v4
-              with:
-                registry: ghcr.io
-                username: ${{ github.actor }}
-                password: ${{ secrets.GHCR_PAT }}
-            - name: Build and push Docker image
-              uses: docker/build-push-action@v7
-              with:
-                context: .
-                push: true
-                tags: ghcr.io/gagik-nahapetyan/gradary.api:latest
-            - name: Azure Login
-              uses: azure/login@v3
-              with:
-                creds: ${{ secrets.AZURE_CREDENTIALS }}
-            - name: Deploy to Azure Container App
-              uses: azure/container-apps-deploy-action@v2
-              with:
-                containerAppName: gradary-dev-api
-                resourceGroup: gradary-dev-rg
-                imageToDeploy: ghcr.io/gagik-nahapetyan/gradary.api:latest
-                registryUrl: ghcr.io
-                registryUsername: ${{ github.actor }}
-                registryPassword: ${{ secrets.GHCR_PAT }}
+  build-and-deploy:
+    environment: dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '8.0.x'
+      - name: Run unit tests
+        run: dotnet test OnlineLibrary.Test/OnlineLibrary.Test.csproj
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/gagik-nahapetyan/gradary.api:latest
+      - name: Azure Login
+        uses: azure/login@v3
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Deploy to Azure Container App
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          containerAppName: gradary-dev-api
+          resourceGroup: gradary-dev-rg
+          imageToDeploy: ghcr.io/gagik-nahapetyan/gradary.api:latest
+          registryUrl: ghcr.io
+          registryUsername: ${{ github.actor }}
+          registryPassword: ${{ secrets.GHCR_PAT }}

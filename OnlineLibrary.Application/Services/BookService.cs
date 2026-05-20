@@ -67,11 +67,11 @@ public class BookService(
         if (!bookExists)
             throw new KeyNotFoundException($"Book with id {id} not found");
 
-        await fileStorage.DeleteByPrefixAsync($"book-images/{id}", cancellationToken);
+        await fileStorage.DeleteByPrefixAsync($"book-covers/{id}", cancellationToken);
 
         var ext = ImageContentTypes.GetExtension(contentType);
         using var stream = openStream();
-        await fileStorage.UploadAsync($"book-images/{id}{ext}", stream, contentType, cancellationToken);
+        await fileStorage.UploadAsync($"book-covers/{id}{ext}", stream, contentType, cancellationToken);
     }
 
     public async Task<(Stream stream, string contentType)> GetImageAsync(int id, CancellationToken cancellationToken = default)
@@ -80,7 +80,7 @@ public class BookService(
         if (!bookExists)
             throw new KeyNotFoundException($"Book with id {id} not found");
 
-        var key = await fileStorage.FindKeyByPrefixAsync($"book-images/{id}", cancellationToken);
+        var key = await fileStorage.FindKeyByPrefixAsync($"book-covers/{id}", cancellationToken);
         if (key is null)
             throw new KeyNotFoundException($"No image found for book {id}");
 
@@ -169,8 +169,10 @@ public class BookService(
     private async Task<BookModel> ToModelWithImageAsync(Book book, CancellationToken ct)
     {
         var model = book.ToModel();
-        var key = await fileStorage.FindKeyByPrefixAsync($"book-images/{model.Id}", ct);
-        model.ImageUrl = key is not null ? $"/api/books/{model.Id}/image" : null;
+        var key = await fileStorage.FindKeyByPrefixAsync($"book-covers/{model.Id}", ct);
+        model.ImageUrl = key is not null
+            ? fileStorage.GetPublicUrl(key) ?? $"/api/books/{model.Id}/image"
+            : null;
         return model;
     }
 

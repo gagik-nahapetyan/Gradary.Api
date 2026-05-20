@@ -10,7 +10,7 @@ public interface IFileStorageService
     /// Uploads a file to the storage backend under the specified key.
     /// If a file with the same key already exists it will be overwritten.
     /// </summary>
-    /// <param name="key">The unique path/key used to identify the file (e.g. "book-images/7.jpg").</param>
+    /// <param name="key">The unique path/key used to identify the file (e.g. "book-covers/7.jpg").</param>
     /// <param name="stream">The file content to upload.</param>
     /// <param name="contentType">The MIME type of the file (e.g. "image/jpeg").</param>
     /// <param name="ct">The token to cancel the operation.</param>
@@ -32,7 +32,7 @@ public interface IFileStorageService
     /// Returns the full key of the first file whose key starts with <paramref name="prefix"/>,
     /// or <c>null</c> if no matching file exists.
     /// Useful for locating a file when its extension is not known upfront
-    /// (e.g. "book-images/7" may match "book-images/7.jpg").
+    /// (e.g. "book-covers/7" may match "book-covers/7.jpg").
     /// </summary>
     /// <param name="prefix">The key prefix to search for.</param>
     /// <param name="ct">The token to cancel the operation.</param>
@@ -47,4 +47,12 @@ public interface IFileStorageService
     /// <param name="keyPrefix">The key prefix identifying the files to delete.</param>
     /// <param name="ct">The token to cancel the operation.</param>
     Task DeleteByPrefixAsync(string keyPrefix, CancellationToken ct = default);
+
+    /// <summary>
+    /// Returns a direct public URL for the file identified by <paramref name="key"/>,
+    /// or <c>null</c> if the backend does not expose files via public URLs (e.g. local storage).
+    /// Callers should fall back to streaming via the API when this returns <c>null</c>.
+    /// </summary>
+    /// <param name="key">The unique path/key of the file.</param>
+    string? GetPublicUrl(string key);
 }

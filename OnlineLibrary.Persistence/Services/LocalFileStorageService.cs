@@ -64,6 +64,8 @@ public class LocalFileStorageService : IFileStorageService
         return Task.CompletedTask;
     }
 
+    public string? GetPublicUrl(string key) => null;
+
     private string ToPath(string key) =>
         Path.Combine(_basePath, key.Replace('/', Path.DirectorySeparatorChar));
 

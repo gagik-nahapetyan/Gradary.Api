@@ -1,3 +1,5 @@
+using Azure.Identity;
+using Azure.Storage.Blobs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,10 +31,28 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddFileStorage(this IServiceCollection services)
+    public static IServiceCollection AddFileStorage(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<IFileStorageService, LocalFileStorageService>();
-        
+        var provider = configuration["FileStorage:Provider"] ?? "Local";
+
+        if (string.Equals(provider, "AzureBlob", StringComparison.OrdinalIgnoreCase))
+        {
+            var accountUrl = configuration["FileStorage:AzureBlob:AccountUrl"]
+                ?? throw new InvalidOperationException("FileStorage:AzureBlob:AccountUrl is required when provider is AzureBlob");
+            var containerName = configuration["FileStorage:AzureBlob:PublicContainerName"]
+                ?? throw new InvalidOperationException("FileStorage:AzureBlob:PublicContainerName is required when provider is AzureBlob");
+
+            var serviceClient = new BlobServiceClient(new Uri(accountUrl), new DefaultAzureCredential());
+            var containerClient = serviceClient.GetBlobContainerClient(containerName);
+
+            services.AddSingleton(containerClient);
+            services.AddScoped<IFileStorageService, AzureBlobFileStorageService>();
+        }
+        else
+        {
+            services.AddScoped<IFileStorageService, LocalFileStorageService>();
+        }
+
         return services;
     }
 

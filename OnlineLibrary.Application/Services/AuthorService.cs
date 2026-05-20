@@ -111,7 +111,9 @@ public class AuthorService(
     {
         var model = author.ToModel();
         var key = await fileStorage.FindKeyByPrefixAsync($"author-images/{model.Id}", ct);
-        model.ImageUrl = key is not null ? $"/api/authors/{model.Id}/image" : null;
+        model.ImageUrl = key is not null
+            ? fileStorage.GetPublicUrl(key) ?? $"/api/authors/{model.Id}/image"
+            : null;
         return model;
     }
 

@@ -18,7 +18,12 @@ public static class ServiceCollectionExtensions
     {
         services.AddDbContext<OnlineLibraryDbContext>(
             (serviceProvider, options) => options
-                .UseSqlServer(configuration["ConnectionStrings:OnlineLibraryDb"])
+                .UseSqlServer(
+                    configuration["ConnectionStrings:OnlineLibraryDb"],
+                    sql => sql.EnableRetryOnFailure(
+                        maxRetryCount: 5,
+                        maxRetryDelay: TimeSpan.FromSeconds(10),
+                        errorNumbersToAdd: null))
                 .AddInterceptors(serviceProvider.GetRequiredService<AuditInterceptor>())
         );
 

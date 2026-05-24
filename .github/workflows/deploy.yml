@@ -33,7 +33,9 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/gagik-nahapetyan/gradary.api:latest
+          tags: |
+            ghcr.io/gagik-nahapetyan/gradary.api:latest
+            ghcr.io/gagik-nahapetyan/gradary.api:${{ github.sha }}
       - name: Azure Login
         uses: azure/login@v3
         with:
@@ -43,7 +45,7 @@ jobs:
         with:
           containerAppName: gradary-dev-api
           resourceGroup: gradary-dev-rg
-          imageToDeploy: ghcr.io/gagik-nahapetyan/gradary.api:latest
+          imageToDeploy: ghcr.io/gagik-nahapetyan/gradary.api:${{ github.sha }}
           registryUrl: ghcr.io
           registryUsername: ${{ github.actor }}
           registryPassword: ${{ secrets.GHCR_PAT }}

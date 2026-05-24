@@ -31,16 +31,18 @@ public interface IRepository<TEntity>
     /// <param name="id">The id supplied.</param>
     /// <param name="cancellationToken">The token to cancel the operation.</param>
     /// <param name="includeDeleted">When true, soft-deleted entities are included.</param>
+    /// <param name="tracked">When true, the entity is loaded into the change tracker; otherwise AsNoTracking is applied.</param>
     /// <returns>The task representing the asynchronous operation wrapped the entity.</returns>
-    Task<TEntity?> GetByIdAsync(int id, CancellationToken cancellationToken = default, bool includeDeleted = false);
+    Task<TEntity?> GetByIdAsync(int id, CancellationToken cancellationToken = default, bool includeDeleted = false, bool tracked = false);
 
     /// <summary>
     /// Retrieves the list of all entities.
     /// </summary>
     /// <param name="cancellationToken">The token to cancel the operation.</param>
     /// <param name="includeDeleted">When true, soft-deleted entities are included.</param>
+    /// <param name="tracked">When true, entities are loaded into the change tracker; otherwise AsNoTracking is applied.</param>
     /// <returns>The task representing the asynchronous operation wrapped the list of entities.</returns>
-    Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default, bool includeDeleted = false);
+    Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default, bool includeDeleted = false, bool tracked = false);
 
     /// <summary>
     /// Filters the entities by the condition supplied.
@@ -48,8 +50,9 @@ public interface IRepository<TEntity>
     /// <param name="predicate">The predicate supplied.</param>
     /// <param name="cancellationToken">The token to cancel the operation.</param>
     /// <param name="includeDeleted">When true, soft-deleted entities are included.</param>
+    /// <param name="tracked">When true, entities are loaded into the change tracker; otherwise AsNoTracking is applied.</param>
     /// <returns>The task representing the asynchronous operation wrapped the list of filtered entities.</returns>
-    Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default, bool includeDeleted = false);
+    Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default, bool includeDeleted = false, bool tracked = false);
 
     /// <summary>
     /// Determines if any entity satisfying the provided condition exists.
@@ -79,11 +82,12 @@ public interface IRepository<TEntity>
     /// <param name="includeDeleted">When true, soft-deleted entities are included.</param>
     /// <returns>The task representing the asynchronous operation wrapped the paged list of entities.</returns>
     Task<PagedList<TEntity>> GetPagedAsync(
-        int page, 
-        int pageSize, 
-        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null, 
-        CancellationToken cancellationToken = default, 
-        bool includeDeleted = false);
+        int page,
+        int pageSize,
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+        CancellationToken cancellationToken = default,
+        bool includeDeleted = false,
+        bool tracked = false);
 
     /// <summary>
     /// Retrieves a paginated list of entities matching the predicate.
@@ -96,12 +100,13 @@ public interface IRepository<TEntity>
     /// <param name="includeDeleted">When true, soft-deleted entities are included.</param>
     /// <returns>The task representing the asynchronous operation wrapped the paged list of filtered entities.</returns>
     Task<PagedList<TEntity>> FindPagedAsync(
-        Expression<Func<TEntity, bool>> predicate, 
-        int page, 
-        int pageSize, 
-        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null, 
-        CancellationToken cancellationToken = default, 
-        bool includeDeleted = false);
+        Expression<Func<TEntity, bool>> predicate,
+        int page,
+        int pageSize,
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+        CancellationToken cancellationToken = default,
+        bool includeDeleted = false,
+        bool tracked = false);
 
     /// <summary>
     /// Removes the record from the database.

@@ -26,12 +26,12 @@ public class AuthorService(
 
     public async Task UpdateAsync(AuthorModel authorModel, CancellationToken cancellationToken = default)
     {
-        var existingAuthor = await authorRepository.GetByIdAsync(authorModel.Id, cancellationToken);
+        var existingAuthor = await authorRepository.GetByIdAsync(authorModel.Id, cancellationToken, tracked: true);
         if (existingAuthor is null)
             throw new KeyNotFoundException($"Author with id {authorModel.Id} not found");
 
-        var author = authorModel.ToEntity();
-        authorRepository.Update(author);
+        existingAuthor.FullName = authorModel.FullName;
+        existingAuthor.Biography = authorModel.Biography;
 
         await authorRepository.SaveChangesAsync(cancellationToken);
     }

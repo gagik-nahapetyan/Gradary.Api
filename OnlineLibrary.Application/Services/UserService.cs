@@ -25,26 +25,24 @@ public class UserService(IUserRepository userRepository, IPasswordHasher passwor
 
     public async Task UpdateAsync(UserModel userModel, CancellationToken cancellationToken = default)
     {
-        var existingUser = await userRepository.GetByIdAsync(userModel.Id, cancellationToken);
+        var existingUser = await userRepository.GetByIdAsync(userModel.Id, cancellationToken, tracked: true);
         if (existingUser is null)
             throw new KeyNotFoundException($"User with id {userModel.Id} not found");
 
-        userModel.PasswordHash = existingUser.PasswordHash;
-
-        var user = userModel.ToEntity();
-        userRepository.Update(user);
+        existingUser.FullName = userModel.FullName;
+        existingUser.Email = userModel.Email;
+        existingUser.Role = userModel.Role;
 
         await userRepository.SaveChangesAsync(cancellationToken);
     }
 
     public async Task UpdatePasswordAsync(int id, string newPassword, CancellationToken cancellationToken = default)
     {
-        var existingUser = await userRepository.GetByIdAsync(id, cancellationToken);
+        var existingUser = await userRepository.GetByIdAsync(id, cancellationToken, tracked: true);
         if (existingUser is null)
             throw new KeyNotFoundException($"User with id {id} not found");
 
         existingUser.PasswordHash = passwordHasher.Hash(newPassword);
-        userRepository.Update(existingUser);
 
         await userRepository.SaveChangesAsync(cancellationToken);
     }

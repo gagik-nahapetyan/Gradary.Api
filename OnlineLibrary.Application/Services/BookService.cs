@@ -32,16 +32,19 @@ public class BookService(
 
     public async Task UpdateAsync(BookModel bookModel, CancellationToken cancellationToken = default)
     {
-        var bookExists = await bookRepository.ExistAsync(b => b.Id == bookModel.Id, cancellationToken);
-        if (!bookExists)
+        var existingBook = await bookRepository.GetByIdAsync(bookModel.Id, cancellationToken, tracked: true);
+        if (existingBook is null)
             throw new KeyNotFoundException($"Book with id {bookModel.Id} not found");
 
         var bookWithSameTitleExists = await bookRepository.ExistAsync(b => b.Id != bookModel.Id && b.Title.ToLower() == bookModel.Title.ToLower(), cancellationToken);
         if (bookWithSameTitleExists)
             throw new ArgumentException($"Book with title {bookModel.Title} already exists");
 
-        var book = bookModel.ToEntity();
-        bookRepository.Update(book);
+        existingBook.Title = bookModel.Title;
+        existingBook.Subtitle = bookModel.Subtitle;
+        existingBook.Description = bookModel.Description;
+        existingBook.AuthorId = bookModel.AuthorId;
+        existingBook.CategoryId = bookModel.CategoryId;
 
         await bookRepository.SaveChangesAsync(cancellationToken);
     }

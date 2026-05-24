@@ -36,23 +36,23 @@ public class Repository<TEntity> : IRepository<TEntity>
         DbSet.Update(entity);
     }
 
-    public virtual async Task<TEntity?> GetByIdAsync(int id, CancellationToken cancellationToken = default, bool includeDeleted = false)
+    public virtual async Task<TEntity?> GetByIdAsync(int id, CancellationToken cancellationToken = default, bool includeDeleted = false, bool tracked = false)
     {
-        var query = includeDeleted ? DbSet.IgnoreQueryFilters() : DbSet.AsQueryable();
+        var query = BuildQuery(includeDeleted, tracked);
 
         return await query.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
     }
 
-    public async Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default, bool includeDeleted = false)
+    public async Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default, bool includeDeleted = false, bool tracked = false)
     {
-        var query = includeDeleted ? DbSet.IgnoreQueryFilters() : DbSet.AsQueryable();
+        var query = BuildQuery(includeDeleted, tracked);
 
         return await query.ToListAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default, bool includeDeleted = false)
+    public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default, bool includeDeleted = false, bool tracked = false)
     {
-        var query = includeDeleted ? DbSet.IgnoreQueryFilters() : DbSet.AsQueryable();
+        var query = BuildQuery(includeDeleted, tracked);
 
         return await query.Where(predicate).ToListAsync(cancellationToken);
     }
@@ -72,31 +72,39 @@ public class Repository<TEntity> : IRepository<TEntity>
     }
 
     public virtual Task<PagedList<TEntity>> GetPagedAsync(
-        int page, 
-        int pageSize, 
-        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null, 
-        CancellationToken cancellationToken = default, 
-        bool includeDeleted = false)
+        int page,
+        int pageSize,
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+        CancellationToken cancellationToken = default,
+        bool includeDeleted = false,
+        bool tracked = false)
     {
-        var query = includeDeleted ? DbSet.IgnoreQueryFilters() : DbSet.AsQueryable();
+        var query = BuildQuery(includeDeleted, tracked);
         return query.ToPagedListAsync(page, pageSize, orderBy, cancellationToken);
     }
 
     public virtual Task<PagedList<TEntity>> FindPagedAsync(
-        Expression<Func<TEntity, bool>> predicate, 
-        int page, 
-        int pageSize, 
-        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null, 
-        CancellationToken cancellationToken = default, 
-        bool includeDeleted = false)
+        Expression<Func<TEntity, bool>> predicate,
+        int page,
+        int pageSize,
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+        CancellationToken cancellationToken = default,
+        bool includeDeleted = false,
+        bool tracked = false)
     {
-        var query = includeDeleted ? DbSet.IgnoreQueryFilters() : DbSet.AsQueryable();
+        var query = BuildQuery(includeDeleted, tracked);
         return query.Where(predicate).ToPagedListAsync(page, pageSize, orderBy, cancellationToken);
     }
 
     public void Delete(TEntity entity)
     {
         DbSet.Remove(entity);
+    }
+
+    protected IQueryable<TEntity> BuildQuery(bool includeDeleted, bool tracked)
+    {
+        var query = includeDeleted ? DbSet.IgnoreQueryFilters() : DbSet.AsQueryable();
+        return tracked ? query : query.AsNoTracking();
     }
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)

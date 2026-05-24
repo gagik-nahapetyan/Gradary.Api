@@ -13,9 +13,9 @@ public class BookCollectionItemRepository : Repository<BookCollectionItem>, IBoo
     {
     }
 
-    public async Task<BookCollectionItem?> GetByCollectionAndBookAsync(int collectionId, int bookId, CancellationToken cancellationToken = default)
+    public async Task<BookCollectionItem?> GetByCollectionAndBookAsync(int collectionId, int bookId, CancellationToken cancellationToken = default, bool tracked = false)
     {
-        return await DbSet
+        return await BuildQuery(includeDeleted: false, tracked)
             .FirstOrDefaultAsync(i => i.BookCollectionId == collectionId && i.BookId == bookId, cancellationToken);
     }
 }

@@ -13,17 +13,17 @@ public class BookCollectionRepository : Repository<BookCollection>, IBookCollect
     {
     }
 
-    public async Task<IEnumerable<BookCollection>> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<BookCollection>> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default, bool tracked = false)
     {
-        return await DbSet
+        return await BuildQuery(includeDeleted: false, tracked)
             .Where(c => c.UserId == userId)
             .Include(c => c.Items).ThenInclude(i => i.Book)
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<BookCollection?> GetByIdWithItemsAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<BookCollection?> GetByIdWithItemsAsync(int id, CancellationToken cancellationToken = default, bool tracked = false)
     {
-        return await DbSet
+        return await BuildQuery(includeDeleted: false, tracked)
             .Include(c => c.Items).ThenInclude(i => i.Book)
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
     }

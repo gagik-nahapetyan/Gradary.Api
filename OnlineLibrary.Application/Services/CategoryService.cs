@@ -23,14 +23,15 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
 
     public async Task UpdateAsync(CategoryModel categoryModel, CancellationToken cancellationToken = default)
     {
-        var existingCategory = await categoryRepository.GetByIdAsync(categoryModel.Id, cancellationToken);
+        var existingCategory = await categoryRepository.GetByIdAsync(categoryModel.Id, cancellationToken, tracked: true);
         if (existingCategory is null)
             throw new KeyNotFoundException($"Category with id {categoryModel.Id} not found");
 
         await ValidateParentAsync(categoryModel, cancellationToken);
 
-        var category = categoryModel.ToEntity();
-        categoryRepository.Update(category);
+        existingCategory.Name = categoryModel.Name;
+        existingCategory.Description = categoryModel.Description;
+        existingCategory.ParentId = categoryModel.ParentId;
 
         await categoryRepository.SaveChangesAsync(cancellationToken);
     }

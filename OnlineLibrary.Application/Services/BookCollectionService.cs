@@ -26,14 +26,13 @@ public class BookCollectionService(
 
     public async Task<BookCollectionModel> UpdateAsync(BookCollectionModel model, int callerId, CancellationToken cancellationToken = default)
     {
-        var collection = await bookCollectionRepository.GetByIdWithItemsAsync(model.Id, cancellationToken);
+        var collection = await bookCollectionRepository.GetByIdWithItemsAsync(model.Id, cancellationToken, tracked: true);
         await validator.ValidateUpdateAsync(collection, model, callerId, cancellationToken);
 
         collection!.Name = model.Name;
         collection.Description = model.Description;
         collection.Status = model.Status;
 
-        bookCollectionRepository.Update(collection);
         await bookCollectionRepository.SaveChangesAsync(cancellationToken);
 
         return collection.ToModel();
@@ -78,13 +77,12 @@ public class BookCollectionService(
     public async Task<BookCollectionItemModel> UpdateBookAsync(int collectionId, BookCollectionItemModel model, int callerId, CancellationToken cancellationToken = default)
     {
         var collection = await bookCollectionRepository.GetByIdWithItemsAsync(collectionId, cancellationToken);
-        var item = await bookCollectionItemRepository.GetByCollectionAndBookAsync(collectionId, model.BookId, cancellationToken);
+        var item = await bookCollectionItemRepository.GetByCollectionAndBookAsync(collectionId, model.BookId, cancellationToken, tracked: true);
         validator.ValidateUpdateBook(collection, item, model, callerId);
 
         item!.Status = model.Status;
         item.Position = model.Position;
 
-        bookCollectionItemRepository.Update(item);
         await bookCollectionItemRepository.SaveChangesAsync(cancellationToken);
 
         return item.ToModel();

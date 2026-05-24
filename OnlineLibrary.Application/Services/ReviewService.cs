@@ -32,7 +32,7 @@ public class ReviewService(
 
     public async Task UpdateAsync(ReviewModel reviewModel, CancellationToken cancellationToken = default)
     {
-        var existingReview = await reviewRepository.GetByIdAsync(reviewModel.Id, cancellationToken);
+        var existingReview = await reviewRepository.GetByIdAsync(reviewModel.Id, cancellationToken, tracked: true);
         if (existingReview is null)
             throw new KeyNotFoundException($"Review with id {reviewModel.Id} not found");
 
@@ -42,8 +42,10 @@ public class ReviewService(
         if (!await userRepository.ExistAsync(u => u.Id == reviewModel.UserId, cancellationToken))
             throw new KeyNotFoundException($"User with id {reviewModel.UserId} not found");
 
-        var review = reviewModel.ToEntity();
-        reviewRepository.Update(review);
+        existingReview.UserId = reviewModel.UserId;
+        existingReview.BookId = reviewModel.BookId;
+        existingReview.Rating = reviewModel.Rating;
+        existingReview.Comment = reviewModel.Comment;
 
         await reviewRepository.SaveChangesAsync(cancellationToken);
     }

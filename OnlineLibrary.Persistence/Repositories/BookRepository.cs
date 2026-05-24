@@ -13,10 +13,10 @@ public class BookRepository : Repository<Book>, IBookRepository
     {
     }
 
-    public override async Task<Book?> GetByIdAsync(int id, CancellationToken cancellationToken = default, bool includeDeleted = false)
+    public override async Task<Book?> GetByIdAsync(int id, CancellationToken cancellationToken = default, bool includeDeleted = false, bool tracked = false)
     {
-        var query = includeDeleted ? DbSet.IgnoreQueryFilters() : DbSet.AsQueryable();
-        
+        var query = BuildQuery(includeDeleted, tracked);
+
         return await query
             .Include(b => b.Author)
             .Include(b => b.Category)
@@ -28,10 +28,11 @@ public class BookRepository : Repository<Book>, IBookRepository
         int pageSize,
         Func<IQueryable<Book>, IOrderedQueryable<Book>>? orderBy = null,
         CancellationToken cancellationToken = default,
-        bool includeDeleted = false)
+        bool includeDeleted = false,
+        bool tracked = false)
     {
-        var query = includeDeleted ? DbSet.IgnoreQueryFilters() : DbSet.AsQueryable();
-        
+        var query = BuildQuery(includeDeleted, tracked);
+
         return query
             .Include(b => b.Author)
             .Include(b => b.Category)
@@ -44,10 +45,11 @@ public class BookRepository : Repository<Book>, IBookRepository
         int pageSize,
         Func<IQueryable<Book>, IOrderedQueryable<Book>>? orderBy = null,
         CancellationToken cancellationToken = default,
-        bool includeDeleted = false)
+        bool includeDeleted = false,
+        bool tracked = false)
     {
-        var query = includeDeleted ? DbSet.IgnoreQueryFilters() : DbSet.AsQueryable();
-        
+        var query = BuildQuery(includeDeleted, tracked);
+
         return query
             .Include(b => b.Author)
             .Include(b => b.Category)

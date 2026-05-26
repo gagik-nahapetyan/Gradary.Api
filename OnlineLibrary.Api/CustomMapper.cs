@@ -230,6 +230,7 @@ public static class CustomMapper
         {
             Id = model.Id,
             UserId = model.UserId,
+            UserFullName = model.UserFullName,
             BookId = model.BookId,
             Rating = model.Rating,
             Comment = model.Comment

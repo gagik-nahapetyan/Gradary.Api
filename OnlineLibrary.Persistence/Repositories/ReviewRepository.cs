@@ -1,6 +1,9 @@
+using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using OnlineLibrary.Application.Abstractions.Repositories;
 using OnlineLibrary.Domain.Entities;
 using OnlineLibrary.Domain.Models;
+using OnlineLibrary.Persistence.Extensions;
 
 namespace OnlineLibrary.Persistence.Repositories;
 
@@ -13,14 +16,39 @@ public class ReviewRepository : Repository<Review>, IReviewRepository
     {
     }
 
+    public override async Task<Review?> GetByIdAsync(int id, CancellationToken cancellationToken = default, bool includeDeleted = false, bool tracked = false)
+    {
+        var query = BuildQuery(includeDeleted, tracked);
+
+        return await query
+            .Include(r => r.User)
+            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+    }
+
+    public override Task<PagedList<Review>> FindPagedAsync(
+        Expression<Func<Review, bool>> predicate,
+        int page,
+        int pageSize,
+        Func<IQueryable<Review>, IOrderedQueryable<Review>>? orderBy = null,
+        CancellationToken cancellationToken = default,
+        bool includeDeleted = false,
+        bool tracked = false)
+    {
+        var query = BuildQuery(includeDeleted, tracked);
+
+        return query
+            .Include(r => r.User)
+            .Where(predicate)
+            .ToPagedListAsync(page, pageSize, orderBy, cancellationToken);
+    }
+
     public Task<PagedList<Review>> GetByBookIdPagedAsync(
-        int bookId, 
-        int page, 
-        int pageSize, 
-        Func<IQueryable<Review>, IOrderedQueryable<Review>>? orderBy = null, 
+        int bookId,
+        int page,
+        int pageSize,
+        Func<IQueryable<Review>, IOrderedQueryable<Review>>? orderBy = null,
         CancellationToken cancellationToken = default)
     {
         return FindPagedAsync(r => r.BookId == bookId, page, pageSize, orderBy, cancellationToken);
-    } 
+    }
 }
-

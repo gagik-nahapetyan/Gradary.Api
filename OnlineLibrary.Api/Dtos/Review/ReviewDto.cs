@@ -16,7 +16,12 @@ public class ReviewDto
     /// The id of the reviewer.
     /// </summary>
     public int UserId { get; set; }
-    
+
+    /// <summary>
+    /// The full name of the reviewer.
+    /// </summary>
+    public string? UserFullName { get; set; }
+
     /// <summary>
     /// The id of the book.
     /// </summary>

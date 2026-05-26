@@ -125,6 +125,7 @@ public static class CustomMapper
         {
             Id = entity.Id,
             UserId = entity.UserId,
+            UserFullName = entity.User?.FullName,
             BookId = entity.BookId,
             Rating = entity.Rating,
             Comment = entity.Comment
